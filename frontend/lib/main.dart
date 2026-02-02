@@ -25,9 +25,7 @@ class HomeRoute extends StatelessWidget {
         foregroundColor: Colors.white,
       ), // AppBar
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+        child: 
             ElevatedButton(
               style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(Colors.green),
@@ -36,20 +34,9 @@ class HomeRoute extends StatelessWidget {
               onPressed: () {
                 Navigator.pushNamed(context, '/second');
               },
-            ), // ElevatedButton
-            ElevatedButton(
-              style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Colors.green),
-                  foregroundColor: WidgetStateProperty.all(Colors.white)),
-              child: const Text('Tap Me!'),
-              onPressed: () {
-                Navigator.pushNamed(context, '/third');
-              },
-            ), // ElevatedButton
-          ], // <Widget>[]
-        ), // Column
-      ), // Center
-    ); // Scaffold
+            )
+          )// ElevatedButton
+    );
   }
 }
 
@@ -69,10 +56,10 @@ class SecondRoute extends StatelessWidget {
           style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all(Colors.green),
               foregroundColor: WidgetStateProperty.all(Colors.white)),
+          child: const Text('Friends'), 
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushNamed(context, '/third');
           },
-          child: const Text('Back!'),
         ), // ElevatedButton
       ), // Center
     ); // Scaffold
@@ -93,4 +80,3 @@ class ThirdRoute extends StatelessWidget {
     ); // Scaffold
   }
 }
-
