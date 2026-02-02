@@ -20,7 +20,7 @@ class HomeRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Geeks for Geeks'),
+        title: const Text('JustDropd'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ), // AppBar
@@ -32,7 +32,7 @@ class HomeRoute extends StatelessWidget {
               style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(Colors.green),
                   foregroundColor: WidgetStateProperty.all(Colors.white)),
-              child: const Text('Click Me!'),
+              child: const Text('Login'),
               onPressed: () {
                 Navigator.pushNamed(context, '/second');
               },
@@ -60,7 +60,7 @@ class SecondRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Click Me Page"),
+        title: const Text("Login Page"),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ), // AppBar
