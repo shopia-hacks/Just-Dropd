@@ -1,13 +1,68 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import SpotifyWebApi from 'spotify-web-api-node';
 
 const app = express();
+
+const spotifyAPI = new SpotifyWebApi({
+  clientId: process.env.SPOTIFY_CLIENT_ID,
+  clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+  redirectUri: process.env.SPOTIFY_REDIRECT_URI
+});
 
 app.use(cors());
 app.use(express.json());
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
+});
+
+app.get('/login', (req, res) => {
+  const scopes = [
+    'user-read-private',
+    'user-read-email',
+    'playlist-read-private'
+  ];
+  const authorizeURL = spotifyAPI.createAuthorizeURL(scopes, 'state123');
+  res.redirect(authorizeURL);
+});
+
+app.get("/auth/callback", async (req, res) => {
+  console.log("Callback query:", req.query);
+
+  const code = req.query.code ?? null;
+  const error = req.query.error ?? null;
+
+  if (error) {
+    return res.status(400).send(`Callback Error: ${error}`);
+  }
+
+  if (!code) {
+    return res.status(400).send("Missing code in callback (did you open this URL directly?)");
+  }
+
+  try {
+    const data = await spotifyAPI.authorizationCodeGrant(code);
+
+    const accessToken = data.body.access_token;
+    const refreshToken = data.body.refresh_token;
+    const expiresIn = data.body.expires_in;
+
+    spotifyAPI.setAccessToken(accessToken);
+    spotifyAPI.setRefreshToken(refreshToken);
+
+    res.send("Login successful! ✅");
+
+    setInterval(async () => {
+      const refreshed = await spotifyAPI.refreshAccessToken();
+      spotifyAPI.setAccessToken(refreshed.body.access_token);
+      console.log("Refreshed access token");
+    }, (expiresIn / 2) * 1000);
+  } catch (err) {
+    console.error("Token exchange failed:", err);
+    res.status(500).send(`Token exchange failed: ${err}`);
+  }
 });
 
 export default app;
