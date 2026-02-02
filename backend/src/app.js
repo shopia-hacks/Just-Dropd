@@ -5,8 +5,8 @@ import SpotifyWebApi from 'spotify-web-api-node';
 const app = express();
 
 const spotifyApi = new SpotifyWebApi({
-  clientId: process.env.SPOTIFY_CLIENT_ID || 'e87aeecef35e49c7974ae1843c2788e9',
-  clientSecret: process.env.SPOTIFY_CLIENT_SECRET || 'a1a030f530ac460080dabd00137fb457',
+  clientId: process.env.SPOTIFY_CLIENT_ID,
+  clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
   redirectUri: 'http://127.0.0.1:3000/auth/callback'
 });
 
