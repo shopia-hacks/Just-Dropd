@@ -10,5 +10,5 @@ connectDB();
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
-  console.log(`Go to http://127.0.0.1:${PORT}/login to log in with Spotify`);
+  console.log('Spotify Login at http://127.0.0.1:3000/login')
 });
