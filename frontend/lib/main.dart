@@ -2,37 +2,50 @@ import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 
 void main() {
+  //entry point of every flutter app here
+  //runApp tells Flutter what widget to display first
   runApp(MaterialApp(
-    initialRoute: '/',
+    initialRoute: '/', //first route (screen) shown
+
+    //named routes for navigation
     routes: {
-      '/': (context) => const HomeRoute(),
-      '/second': (context) => const SecondRoute(),
-      '/third': (context) => const ThirdRoute(),
+      '/': (context) => const HomeRoute(), //home page
+      '/login': (context) => const LoginRoute(), //login page
+      '/createProfile': (context) => const CreateProfileRoute(), //profile page?
     },
     debugShowCheckedModeBanner: false,
   )); //MaterialApp
 }
 
+// -------------------- HOME PAGE ---------------------
 class HomeRoute extends StatelessWidget {
   const HomeRoute({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold( //Scaffold gives a basic page layout, app bar, body, buttons, etc
       appBar: AppBar(
-        title: const Text('JustDropd'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+        title: const Text('JustDropd'), //app bar title
+        backgroundColor: Colors.green, //app bar background
+        foregroundColor: Colors.white, //text and icon colors
       ), // AppBar
-      body: Center(
+
+      
+      body: Center( //centers the buttons on the screen
         child: 
             ElevatedButton(
               style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Colors.green),
-                  foregroundColor: WidgetStateProperty.all(Colors.white)),
-              child: const Text('Login'),
+                  backgroundColor: WidgetStateProperty.all(Colors.green), //custom background color
+                  foregroundColor: WidgetStateProperty.all(Colors.white)), //custom text color
+              
+              //text shown on the button
+              child: const Text('Login with Spotify'),
+
+              //what happens when the button is pressed
               onPressed: () {
-                Navigator.pushNamed(context, '/second');
+                //pushes a new screen onto the navigation stack
+                //uses the route name defined in MaterialApp above
+                Navigator.pushNamed(context, '/login');
               },
             )
           )// ElevatedButton
@@ -40,8 +53,9 @@ class HomeRoute extends StatelessWidget {
   }
 }
 
-class SecondRoute extends StatelessWidget {
-  const SecondRoute({Key? key}) : super(key: key);
+// ---------------------- LOGIN PAGE ---------------------
+class LoginRoute extends StatelessWidget {
+  const LoginRoute({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -56,9 +70,9 @@ class SecondRoute extends StatelessWidget {
           style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all(Colors.green),
               foregroundColor: WidgetStateProperty.all(Colors.white)),
-          child: const Text('Friends'), 
+          child: const Text('Create Profile'), 
           onPressed: () {
-            Navigator.pushNamed(context, '/third');
+            Navigator.pushNamed(context, '/createProfile');
           },
         ), // ElevatedButton
       ), // Center
@@ -66,14 +80,15 @@ class SecondRoute extends StatelessWidget {
   }
 }
 
-class ThirdRoute extends StatelessWidget {
-  const ThirdRoute({Key? key}) : super(key: key);
+//------------------- CREATE PROFILE PAGE------------------
+class CreateProfileRoute extends StatelessWidget {
+  const CreateProfileRoute({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Tap Me Page"),
+        title: const Text("Create Profile Page"),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ), // AppBar
