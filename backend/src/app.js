@@ -66,7 +66,7 @@ app.get("/auth/callback", async (req, res) => {
     spotifyAPI.setAccessToken(accessToken); //store the tokens we got in the API client
     spotifyAPI.setRefreshToken(refreshToken);
 
-    res.send("Login successful! ✅"); //should change here to redirect to flutter
+    res.redirect(process.env.FLUTTER_REDIRECT_URL);
 
     //automatically refresh the access token before it expires
     setInterval(async () => {

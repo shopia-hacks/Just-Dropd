@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 void main() {
+  usePathUrlStrategy();
+
   //entry point of every flutter app here
   //runApp tells Flutter what widget to display first
   runApp(MaterialApp(
@@ -16,6 +20,8 @@ void main() {
     debugShowCheckedModeBanner: false,
   )); //MaterialApp
 }
+
+final Uri spotifyLoginUrl = Uri.parse("http://localhost:3000/login");
 
 // -------------------- HOME PAGE ---------------------
 class HomeRoute extends StatelessWidget {
@@ -42,10 +48,10 @@ class HomeRoute extends StatelessWidget {
               child: const Text('Login with Spotify'),
 
               //what happens when the button is pressed
-              onPressed: () {
+              onPressed: () async {
                 //pushes a new screen onto the navigation stack
                 //uses the route name defined in MaterialApp above
-                Navigator.pushNamed(context, '/login');
+                await launchUrl(spotifyLoginUrl, mode: LaunchMode.externalApplication);
               },
             )
           )// ElevatedButton
