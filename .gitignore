@@ -2,6 +2,6 @@ node_modules
 .env
 
 # ignore flutter generated files
-frontend\linux\flutter
-frontend\macos\flutter
-frontend\windows\flutter
+frontend/linux/flutter
+frontend/macos/flutter
+frontend/windows/flutter
