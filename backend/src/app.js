@@ -66,6 +66,12 @@ app.get("/auth/callback", async (req, res) => {
     spotifyAPI.setAccessToken(accessToken); //store the tokens we got in the API client
     spotifyAPI.setRefreshToken(refreshToken);
 
+    //GETTING USER INFO FROM SPOTIFY API
+    const user = await spotifyAPI.getMe(); //getting user object
+    console.log("Spotify user logged in:");
+    console.log("   display_name:", user.body.display_name); //displaying user info from spotify
+    console.log("   user_id:", user.body.id);
+
     res.redirect(process.env.FLUTTER_REDIRECT_URL);
 
     //automatically refresh the access token before it expires
