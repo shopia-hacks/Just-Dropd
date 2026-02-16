@@ -1,5 +1,5 @@
 // models/User.js
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -14,18 +14,21 @@ const userSchema = new mongoose.Schema({
     unique: true,
     lowercase: true
   },
-  password_hash: {
-    type: String,
-    required: true
-  },
   name: String,
   bio: String,
   profile_photo_url: String,
-  spotify_user_id: String,
+
+  // spotify specific fields
+  spotify_user_id: {
+    type: String,
+    required: true,
+    unique: true  // each Spotify account = one JustDropd account
+  },
   spotify_access_token: String,
   spotify_refresh_token: String
+
 }, {
-  timestamps: true  // automatically adds createdAt and updatedAt
+  timestamps: true
 });
 
-module.exports = mongoose.model('User', userSchema);
+export default mongoose.model("User", userSchema);
