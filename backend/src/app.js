@@ -40,51 +40,54 @@ app.get('/login', (req, res) => {
 
 //-------- CALL BACK ROUTE -------------
 app.get("/auth/callback", async (req, res) => {
+  res.set("Cache-Control", "no-store");
 
-  //store the parameters Spotify sends back
   console.log("Callback query:", req.query);
 
-  const code = req.query.code ?? null; //authorization code used for access token
-  const error = req.query.error ?? null; //error returned if login failed
+  const code = req.query.code ?? null;
+  const error = req.query.error ?? null;
 
-  if (error) { //handle any spotify login errors
-    return res.status(400).send(`Callback Error: ${error}`);
-  }
+  if (error) return res.status(400).send(`Callback Error: ${error}`);
+  if (!code) return res.status(400).send("Missing code in callback");
 
-  if (!code) {
-    return res.status(400).send("Missing code in callback (did you open this URL directly?)");
-  }
+  // ✅ per-request spotify client
+  const spotify = new SpotifyWebApi({
+    clientId: process.env.SPOTIFY_CLIENT_ID,
+    clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+    redirectUri: process.env.SPOTIFY_REDIRECT_URI,
+  });
 
   try {
-    //exchange the auth code for access and refresh tokens
-    const data = await spotifyAPI.authorizationCodeGrant(code);
+    const data = await spotify.authorizationCodeGrant(code);
+    const accessToken = data.body.access_token;
+    const refreshToken = data.body.refresh_token;
 
-    const accessToken = data.body.access_token; //token used to access API
-    const refreshToken = data.body.refresh_token; //token to refresh access token
-    const expiresIn = data.body.expires_in; //token lifetime
+    console.log("Grant OK. accessToken length:", accessToken?.length);
 
-    spotifyAPI.setAccessToken(accessToken); //store the tokens we got in the API client
-    spotifyAPI.setRefreshToken(refreshToken);
+    spotify.setAccessToken(accessToken);
+    spotify.setRefreshToken(refreshToken);
 
-    //GETTING USER INFO FROM SPOTIFY API
-    const user = await spotifyAPI.getMe(); //getting user object
-    console.log("Spotify user logged in:");
-    console.log("   display_name:", user.body.display_name); //displaying user info from spotify
-    console.log("   user_id:", user.body.id);
+    // ✅ call getMe on THIS instance
+    const user = await spotify.getMe();
+    console.log("getMe OK:", user.body.display_name, user.body.id);
 
-    res.redirect(process.env.FLUTTER_REDIRECT_URL);
-
-    //automatically refresh the access token before it expires
-    setInterval(async () => {
-      const refreshed = await spotifyAPI.refreshAccessToken();
-      spotifyAPI.setAccessToken(refreshed.body.access_token);
-      console.log("Refreshed access token");
-    }, (expiresIn / 2) * 1000);
+    return res.redirect(process.env.FLUTTER_REDIRECT_URL);
   } catch (err) {
-    //if token related errors when refreshing, shown here
-    console.error("Token exchange failed:", err);
-    res.status(500).send(`Token exchange failed: ${err}`);
+    console.error("Callback FAILED");
+    console.error("  status:", err?.statusCode);
+    console.error("  message:", err?.message);
+    console.error("  body:", err?.body);
+
+    const details =
+      err?.body?.error_description ||
+      err?.body?.error?.message ||
+      err?.message ||
+      "Unknown error";
+
+    return res.status(500).send(`Callback failed: ${details}`);
   }
 });
+
+
 
 export default app;
