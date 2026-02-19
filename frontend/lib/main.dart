@@ -1,21 +1,41 @@
 import 'package:flutter/material.dart';
-import 'pages/home_page.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 void main() {
+  usePathUrlStrategy();
   //entry point of every flutter app here
-  //runApp tells Flutter what widget to display first
+  //runApp tells Flutter what widget to display
   runApp(MaterialApp(
-    initialRoute: '/', //first route (screen) shown
-
-    //named routes for navigation
-    routes: {
-      '/': (context) => const HomeRoute(), //home page
-      '/login': (context) => const LoginRoute(), //login page
-      '/createProfile': (context) => const CreateProfileRoute(), //profile page?
-    },
     debugShowCheckedModeBanner: false,
-  )); //MaterialApp
+
+    onGenerateRoute: (settings) {
+      final uri = Uri.parse(settings.name ?? '/');
+
+      switch (uri.path) { //switch statement to pass in userid, name, etc to the pages
+        case '/':
+          return MaterialPageRoute(builder: (_) => const HomeRoute()); //regular home page w/ spotify login
+
+        case '/login': //login page is for after logging in/authorization
+          return MaterialPageRoute(
+            builder: (_) => LoginRoute( //passing in params to the page
+              userId: uri.queryParameters['userId'],
+              name: uri.queryParameters['name'],
+              isNew: uri.queryParameters['isNew'],
+            ),
+          );
+
+        case '/createProfile': //create profile page (after you are logged in/inserted into MongoDB)
+          return MaterialPageRoute(builder: (_) => const CreateProfileRoute());
+
+        default:
+          return MaterialPageRoute(builder: (_) => const HomeRoute()); //default is the home page
+      }
+    },
+  ));
 }
+
+final Uri spotifyLoginUrl = Uri.parse("http://localhost:3000/login");
 
 // -------------------- HOME PAGE ---------------------
 class HomeRoute extends StatelessWidget {
@@ -42,10 +62,10 @@ class HomeRoute extends StatelessWidget {
               child: const Text('Login with Spotify'),
 
               //what happens when the button is pressed
-              onPressed: () {
+              onPressed: () async {
                 //pushes a new screen onto the navigation stack
                 //uses the route name defined in MaterialApp above
-                Navigator.pushNamed(context, '/login');
+                await launchUrl(spotifyLoginUrl, mode: LaunchMode.platformDefault, webOnlyWindowName: '_self');
               },
             )
           )// ElevatedButton
@@ -54,11 +74,96 @@ class HomeRoute extends StatelessWidget {
 }
 
 // ---------------------- LOGIN PAGE ---------------------
+// page is what spotify redirects back to after login
+// url will look like: localhost"5500/login?userId=123&name=Jon
 class LoginRoute extends StatelessWidget {
-  const LoginRoute({Key? key}) : super(key: key);
+
+  final String? userId;
+  final String? name;
+  final String? isNew;
+
+  const LoginRoute({Key? key, this.userId, this.name, this.isNew}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // read URL parameters that the backend sent back
+    final uri = Uri.base;
+    final userId = uri.queryParameters['userId'];
+    final name = uri.queryParameters['name'];
+    
+    // if userId exists in the URL, login was successful
+    if (userId != null) {
+      // Login worked! Show success and go to profile
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("Login Page"),
+          backgroundColor: Colors.green,
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Welcome, ${name ?? 'User'}! ✅",
+                style: const TextStyle(fontSize: 24),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "MongoDB ID: $userId",
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Colors.green),
+                  foregroundColor: WidgetStateProperty.all(Colors.white),
+                ),
+                child: const Text('Go to Profile'),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/createProfile');
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    // If no userId in URL, something went wrong
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Login Page"),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text("Login incomplete. Please try again."),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(Colors.green),
+                foregroundColor: WidgetStateProperty.all(Colors.white),
+              ),
+              child: const Text('Back to Home'),
+              onPressed: () {
+                Navigator.pushNamed(context, '/');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/*
     return Scaffold(
       appBar: AppBar(
         title: const Text("Login Page"),
@@ -79,6 +184,7 @@ class LoginRoute extends StatelessWidget {
     ); // Scaffold
   }
 }
+*/
 
 //------------------- CREATE PROFILE PAGE------------------
 class CreateProfileRoute extends StatelessWidget {
@@ -91,6 +197,9 @@ class CreateProfileRoute extends StatelessWidget {
         title: const Text("Create Profile Page"),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text("Welcome to JustDropd! 🎵"),
       ), // AppBar
     ); // Scaffold
   }
