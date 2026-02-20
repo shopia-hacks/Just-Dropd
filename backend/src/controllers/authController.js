@@ -22,6 +22,9 @@ export async function callback(req, res) {
     const spotifyName = spotifyUser.body.display_name;
     const spotifyEmail = spotifyUser.body.email;
 
+    //getting user's profile picture
+    const spotifyImageUrl = spotifyUser.body.images?.[0]?.url ?? "";
+
     // Find or create user
     let user = await User.findOne({ spotify_user_id: spotifyId });
     console.log("Spotify user logged in:");
@@ -38,7 +41,8 @@ export async function callback(req, res) {
         name: spotifyName,
         spotify_user_id: spotifyId,
         spotify_access_token: accessToken,
-        spotify_refresh_token: refreshToken
+        spotify_refresh_token: refreshToken,
+        profile_photo_url: spotifyImageUrl
       });
       await user.save();
       console.log("New user saved to MongoDB!");
@@ -46,6 +50,7 @@ export async function callback(req, res) {
       console.log("Existing user found! Updating tokens...");
       user.spotify_access_token = accessToken;
       user.spotify_refresh_token = refreshToken;
+      user.profile_photo_url = spotifyImageUrl;
       await user.save();
       console.log("Tokens updated in MongoDB!");
     }
