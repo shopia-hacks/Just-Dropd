@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:just_dropd/shared/nav_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
@@ -113,7 +114,7 @@ class LoginRoute extends StatelessWidget {
                 "MongoDB ID: $userId",
                 style: const TextStyle(
                   fontSize: 12,
-                  color: Colors.grey,
+                  color: Color.fromARGB(255, 255, 255, 255),
                 ),
               ),
               const SizedBox(height: 24),
@@ -192,6 +193,7 @@ class CreateProfileRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Container(
@@ -269,7 +271,10 @@ class CreateProfileRoute extends StatelessWidget {
                 ),
             ],
         ),
-      )
+      ),
+      bottomNavigationBar: CustomNavBar(),
     );
   }
+
+  
 }
