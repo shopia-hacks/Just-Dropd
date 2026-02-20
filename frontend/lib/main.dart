@@ -39,7 +39,7 @@ final Uri spotifyLoginUrl = Uri.parse("http://localhost:3000/login");
 
 // -------------------- HOME PAGE ---------------------
 class HomeRoute extends StatelessWidget {
-  const HomeRoute({Key? key}) : super(key: key);
+  const HomeRoute({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +82,7 @@ class LoginRoute extends StatelessWidget {
   final String? name;
   final String? isNew;
 
-  const LoginRoute({Key? key, this.userId, this.name, this.isNew}) : super(key: key);
+  const LoginRoute({super.key, this.userId, this.name, this.isNew});
 
   @override
   Widget build(BuildContext context) {
@@ -188,19 +188,88 @@ class LoginRoute extends StatelessWidget {
 
 //------------------- CREATE PROFILE PAGE------------------
 class CreateProfileRoute extends StatelessWidget {
-  const CreateProfileRoute({Key? key}) : super(key: key);
+  const CreateProfileRoute({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Create Profile Page"),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-      ),
-      body: const Center(
-        child: Text("Welcome to JustDropd! 🎵"),
-      ), // AppBar
-    ); // Scaffold
+      backgroundColor: Colors.white,
+      body: Container(
+        width: 551,
+        height: 225,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(color: Colors.white),
+        child: Stack(
+            children: [
+                Positioned(
+                    left: 248,
+                    top: 152,
+                    child: SizedBox(
+                        width: 283,
+                        height: 30,
+                        child: Text(
+                            'Hi I’m Gabi! This is my bio',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                            ),
+                        ),
+                    ),
+                ),
+                Positioned(
+                    left: 248,
+                    top: 112,
+                    child: SizedBox(
+                        width: 306,
+                        height: 27,
+                        child: Text(
+                            '@gabisusername',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                            ),
+                        ),
+                    ),
+                ),
+                Positioned(
+                    left: 248,
+                    top: 60,
+                    child: SizedBox(
+                        width: 375,
+                        height: 57,
+                        child: Text(
+                            'Gabi',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 36,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                            ),
+                        ),
+                    ),
+                ),
+                Positioned(
+                    left: 55,
+                    top: 38,
+                    child: Container(
+                        width: 156,
+                        height: 158,
+                        decoration: ShapeDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage("https://placehold.co/156x158"),
+                                fit: BoxFit.cover,
+                            ),
+                            shape: OvalBorder(),
+                        ),
+                    ),
+                ),
+            ],
+        ),
+      )
+    );
   }
 }
