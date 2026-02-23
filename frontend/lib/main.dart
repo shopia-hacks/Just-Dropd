@@ -246,7 +246,7 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: CustomNavBar(), //putting in nav bar
+      bottomNavigationBar: CustomNavBar(userId: widget.userId,), //putting in nav bar
       body: FutureBuilder<Map<String, dynamic>>( //future builder waits for _useruFture to be done
         future: _userFuture,
         builder: (context, snapshot) {
