@@ -78,13 +78,6 @@ class CustomNavBar extends StatelessWidget {
                             },
                           ),
                           _ActionTile(
-                            title: "Add a countdown",
-                            onTap: () {
-                              Navigator.pop(context);
-                              print("Add a countdown");
-                            },
-                          ),
-                          _ActionTile(
                             title: "Add friends",
                             onTap: () {
                               Navigator.pop(context);
