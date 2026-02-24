@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:just_dropd/pages/add_mixtape.dart';
 import '../pages/activity_feed.dart';
 import '../pages/countdown.dart';
 
@@ -68,6 +69,12 @@ class CustomNavBar extends StatelessWidget {
                             onTap: () {
                               Navigator.pop(context); // close the sheet
                               print("Add a mixtape");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddMixtapePage(userId: userId), //reroute to add mixtape page
+                                ),
+                              );
                             },
                           ),
                           _ActionTile(

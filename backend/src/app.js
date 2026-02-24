@@ -21,7 +21,7 @@ app.get("/health", (req, res) => res.json({ status: "ok" }));
 
 app.use("/", authRoutes);
 app.use("/users", userRoutes);
-app.use("/spotify", spotifyRoutes);
+app.use("/api/spotify", spotifyRoutes);
 
 // new routes
 app.use("/friendships", friendshipRoutes);
