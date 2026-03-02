@@ -40,10 +40,10 @@ export async function searchTracks(req, res) {
 
     // Try search; if token expired, refresh and retry once
     try {
-      const result = await spotify.searchTracks(q, { limit });
+      const result = await spotify.searchTracks(q, { limit }); //spotify search API functionality 
 
       const tracks = (result.body.tracks?.items || []).map((t) => ({
-        spotify_track_id: t.id, // matches your Mixtape schema naming
+        spotify_track_id: t.id, 
         name: t.name,
         artist: (t.artists || []).map((a) => a.name).join(", "),
         album: t.album?.name || "",

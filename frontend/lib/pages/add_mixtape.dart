@@ -14,6 +14,7 @@ class AddMixtapePage extends StatefulWidget {
 
 class _AddMixtapePageState extends State<AddMixtapePage> {
   final _mixtapeTitleController = TextEditingController();
+  final _mixtapeMessageController = TextEditingController();
   final _receiverUsernameController = TextEditingController();
   final _songSearchController = TextEditingController();
 
@@ -36,6 +37,7 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
   void dispose() {
     _debounce?.cancel();
     _mixtapeTitleController.dispose();
+    _mixtapeMessageController.dispose();
     _receiverUsernameController.dispose();
     _songSearchController.dispose();
     super.dispose();
@@ -205,6 +207,32 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
             controller: _receiverUsernameController,
             decoration: InputDecoration(
               hintText: "@username",
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFD9D9D9)),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          //mixtape message
+          const Text(
+            "Mixtape Message",
+            style: TextStyle(
+              color: Color(0xFF1E1E1E),
+              fontSize: 16,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w400,
+              height: 1.40,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _mixtapeMessageController,
+            decoration: InputDecoration(
+              hintText: "Message",
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -434,6 +462,7 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
 
                 debugPrint("Create mixtape pressed");
                 debugPrint("Title: ${_mixtapeTitleController.text}");
+                debugPrint("Message: ${_mixtapeMessageController.text}");
                 debugPrint("Receiver: ${_receiverUsernameController.text}");
                 debugPrint("Type: $_mixtapeType");
                 debugPrint("Tracks payload: $tracks");

@@ -32,7 +32,7 @@ const mixtapeSchema = new mongoose.Schema({
     type: String
   },
   icon_type: {
-    type: String,        // e.g. "cd_1", "cassette_2" — matches your icon library
+    type: String,        // e.g. "cd_1", "cassette_2" — matches icon library
     default: "cd_1"
   },
   message: {
