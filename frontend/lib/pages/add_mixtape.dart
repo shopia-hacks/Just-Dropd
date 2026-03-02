@@ -3,6 +3,8 @@ import 'package:just_dropd/shared/nav_bar.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:typed_data';
+import 'package:image_picker/image_picker.dart'; //for uploading cover art images
 
 class AddMixtapePage extends StatefulWidget {
   final String? userId;
@@ -28,6 +30,12 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
   String? _searchError;
   Timer? _debounce;
 
+  final ImagePicker _picker = ImagePicker(); //for upload images
+
+  // store cover art locally (no DB submission yet, need to complete friends functionality first)
+  XFile? _coverFile;
+  Uint8List? _coverBytes; // needed for preview on web
+  String? _coverError;
 
   String get _baseUrl {
     return "http://localhost:3000";
@@ -91,6 +99,30 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
         _isSearching = false;
         _searchError = e.toString();
       });
+    }
+  }
+
+  //function to pick a cover image (uploading functionality)
+  Future<void> _pickCoverImage() async {
+    try {
+      setState(() => _coverError = null);
+
+      final file = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200, // keeps it reasonably sized
+        imageQuality: 85, // compress a bit
+      );
+
+      if (file == null) return; // user canceled
+
+      final bytes = await file.readAsBytes(); // works on web + mobile
+
+      setState(() {
+        _coverFile = file;
+        _coverBytes = bytes;
+      });
+    } catch (e) {
+      setState(() => _coverError = "Couldn’t pick image: $e");
     }
   }
 
@@ -262,23 +294,57 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      height: 110,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD9D9D9),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          "Upload\n(soon)",
-                          textAlign: TextAlign.center,
+                    GestureDetector(
+                      onTap: _pickCoverImage,
+                      child: Container(
+                        height: 110,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD9D9D9),
+                          borderRadius: BorderRadius.circular(8),
                         ),
+                        clipBehavior: Clip.antiAlias,
+                        child: _coverBytes == null
+                            ? const Center(
+                                child: Text(
+                                  "Upload\n(soon)",
+                                  textAlign: TextAlign.center,
+                                ),
+                              )
+                            : Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  Image.memory(
+                                    _coverBytes!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  // optional little edit badge
+                                  Align(
+                                    alignment: Alignment.bottomRight,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(6),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black54,
+                                          borderRadius: BorderRadius.circular(999),
+                                        ),
+                                        child: const Icon(Icons.edit, color: Colors.white, size: 16),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 16),
+              //error handling the cover image
+              if (_coverError != null) ...[
+                const SizedBox(height: 6),
+                Text(_coverError!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+              ],
 
               Expanded(
                 child: Column(
@@ -466,6 +532,7 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
                 debugPrint("Receiver: ${_receiverUsernameController.text}");
                 debugPrint("Type: $_mixtapeType");
                 debugPrint("Tracks payload: $tracks");
+                debugPrint("Cover file: ${_coverFile?.name}");
               },
               child: const Text(
                 "Create Mixtape",
