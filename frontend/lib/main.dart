@@ -193,11 +193,10 @@ class LoginRoute extends StatelessWidget {
 }
 */
 
-//------------------- CREATE PROFILE PAGE (Profile Page?)------------------
+//------------------- CREATE PROFILE PAGE (Profile Page)------------------
 class CreateProfileRoute extends StatefulWidget {
+  final String? userId;
 
-  final String? userId; //using the passed in id from login route page to get this specific user from MongoDB
-  
   const CreateProfileRoute({super.key, this.userId});
 
   @override
@@ -205,40 +204,31 @@ class CreateProfileRoute extends StatefulWidget {
 }
 
 class _CreateProfileRouteState extends State<CreateProfileRoute> {
-
-  //this stores future result of the api call, will eventually get user data from mongoDB
-  //supposed to use FutureMap, FutureBuilder, _fetchUser, etc when we want to pull data from mongoDB
-  //these methods will be good for when we add in editable things like changing bio, name, etc
   late Future<Map<String, dynamic>> _userFuture;
 
   @override
   void initState() {
     super.initState();
-    //start fetching user on this line
     _userFuture = _fetchUser();
   }
 
-  //calls the backend to get the user from MongoDB
   Future<Map<String, dynamic>> _fetchUser() async {
-    final id = widget.userId; //passing userid to widget
+    final id = widget.userId;
 
-    //if user id is missing something went wrong when being passed from login route
     if (id == null || id.isEmpty) {
       throw Exception("Missing userId in route");
     }
 
     final uri = Uri.parse("http://localhost:3000/users/$id");
 
-    //sends a get request to the backend
     final resp = await http.get(uri, headers: {
       "Content-Type": "application/json",
     });
 
-    //if can't get from backend then throw error
     if (resp.statusCode != 200) {
       throw Exception("Failed to load user: ${resp.statusCode} ${resp.body}");
     }
-    //converting the json from what we got from the backend into dart form for UI
+
     return jsonDecode(resp.body) as Map<String, dynamic>;
   }
 
@@ -246,108 +236,206 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: CustomNavBar(userId: widget.userId,), //putting in nav bar
-      body: FutureBuilder<Map<String, dynamic>>( //future builder waits for _useruFture to be done
+      bottomNavigationBar: CustomNavBar(userId: widget.userId),
+      body: FutureBuilder<Map<String, dynamic>>(
         future: _userFuture,
         builder: (context, snapshot) {
-
-          //if the user data is still loading from database, shows a spinner
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) { //if something went wrong when loading show error
+
+          if (snapshot.hasError) {
             return Center(child: Text("Error: ${snapshot.error}"));
           }
 
-          final user = snapshot.data!; //data successfully loaded, getting user info
+          final user = snapshot.data!;
           final name = (user['name'] ?? 'User') as String;
           final username = (user['username'] ?? '') as String;
-
+          final bio = (user['bio'] ?? "Hi I’m $name! This is my bio") as String;
           final profileImageUrl = user['profile_photo_url'] as String?;
 
-          //if user has a spotify pfp then we use it, otherwise we can use a placeholder image
-          final imageProvider = (profileImageUrl != null && profileImageUrl.isNotEmpty)
-              ? NetworkImage(profileImageUrl)
-              : const NetworkImage("https://placehold.co/156x158");
+          final imageProvider =
+              (profileImageUrl != null && profileImageUrl.isNotEmpty)
+                  ? NetworkImage(profileImageUrl)
+                  : const NetworkImage("https://placehold.co/156x158");
 
-          //building the UI using the fetched data above
-          return Container(
-            width: 551,
-            height: 225,
-            clipBehavior: Clip.antiAlias,
-            decoration: const BoxDecoration(color: Colors.white),
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 248,
-                  top: 152,
-                  child: SizedBox(
-                    width: 283,
-                    height: 30,
-                    child: Text(
-                      'Hi I’m $name! This is my bio',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w400,
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1000),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ================= PROFILE HEADER CARD =================
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFD9D9D9)),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 156,
+                            height: 158,
+                            decoration: ShapeDecoration(
+                              image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
+                              ),
+                              shape: const OvalBorder(),
+                            ),
+                          ),
+                          const SizedBox(width: 28),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  name,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 36,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '@$username',
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 20,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  bio,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ),
-                Positioned(
-                  left: 248,
-                  top: 112,
-                  child: SizedBox(
-                    width: 306,
-                    height: 27,
-                    child: Text(
-                      '@$username',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w400,
+
+                    const SizedBox(height: 28),
+
+                    // ================= RECEIVED MIXTAPES SECTION =================
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFD9D9D9)),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Received Mixtapes",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 24,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        
+                          // placeholder shelf row for now
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: Text(
+                              "No accepted mixtapes yet.",
+                              style: TextStyle(color: Colors.black54, fontSize: 16),
+                            ),
+                          ),
+
+                        ],
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                Positioned(
-                  left: 248,
-                  top: 60,
-                  child: SizedBox(
-                    width: 375,
-                    height: 57,
-                    child: Text(
-                      name,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 36,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 55,
-                  top: 38,
-                  child: Container(
-                    width: 156,
-                    height: 158,
-                    decoration: ShapeDecoration(
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.cover,
-                      ),
-                      shape: const OvalBorder(),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+// reusable little card for the shelf section
+class _MixtapeShelfCard extends StatelessWidget {
+  final String title;
+  final String sender;
+  final String imageUrl;
+
+  const _MixtapeShelfCard({
+    required this.title,
+    required this.sender,
+    required this.imageUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 160,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9F9F9),
+        border: Border.all(color: const Color(0xFFD9D9D9)),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              imageUrl,
+              width: 136,
+              height: 136,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 15,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            sender,
+            style: const TextStyle(
+              color: Colors.black54,
+              fontSize: 13,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
       ),
     );
   }
