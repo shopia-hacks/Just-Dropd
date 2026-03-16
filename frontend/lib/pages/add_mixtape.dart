@@ -37,8 +37,23 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
   Uint8List? _coverBytes; // needed for preview on web
   String? _coverError;
 
+  //friends dropdown state:
+  //stores the "other user" objects extracted from the friendship records
+  final List<Map<String, dynamic>> _friends = [];
+  bool _loadingFriends = false;
+  String? _friendsError;
+  String? _selectedFriendId; //the friend they select from the drop down (mongo db id)
+
   String get _baseUrl {
     return "http://localhost:3000";
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    //load current friends so the dropdown has options
+    _fetchFriends();
   }
 
   @override
@@ -49,6 +64,72 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
     _receiverUsernameController.dispose();
     _songSearchController.dispose();
     super.dispose();
+  }
+
+  //Helper function: given one friendship record, determine who the "other user" is
+  //(getting the list of friends for a current logged in user) -> have to sort through friendship records
+  // ex: if I am userId, return friendId
+  //     if I am friendId, return userId
+  // This function helps decide which side of the friendship relationship the logged in user is on!
+  Map<String, dynamic>? _otherUserFromFriendship(dynamic friendshipJson) {
+    final me = widget.userId;
+    final f = friendshipJson as Map<String, dynamic>; //get the friendship records that match with the logged in user
+
+    final userObj = f["userId"];
+    final friendObj = f["friendId"];
+
+    //make sure both of the values are user objects and now just rawIDs
+    if (userObj is Map<String, dynamic> &&
+        friendObj is Map<String, dynamic>) {
+      final userId = userObj["_id"]?.toString();
+      final friendId = friendObj["_id"]?.toString(); 
+
+      if (userId == me) return friendObj;  //logged in sender -> show reciever
+      if (friendId == me) return userObj; //logged in is reciever -> show sender
+      return friendObj;
+    }
+    return null;
+  }
+
+  // fetch accepted friends from backend and convert friendship records
+  // into a clean list of just friend user objects
+  Future<void> _fetchFriends() async {
+    if (widget.userId == null) return;
+
+    setState(() {
+      _loadingFriends = true;
+      _friendsError = null;
+    });
+
+    try {
+      final uri = Uri.parse("$_baseUrl/friendships/user/${widget.userId}");
+      final resp = await http.get(uri);
+
+      if (resp.statusCode != 200) {
+        throw Exception("Friends fetch failed (${resp.statusCode}): ${resp.body}");
+      }
+
+      final data = jsonDecode(resp.body) as List<dynamic>;
+
+      final extractedFriends = data
+          .map((f) => _otherUserFromFriendship(f))
+          .whereType<Map<String, dynamic>>()
+          .toList();
+
+      setState(() {
+        _friends
+          ..clear()
+          ..addAll(extractedFriends);
+      });
+    } catch (e) {
+      setState(() {
+        _friendsError = e.toString();
+      });
+    } finally {
+      setState(() {
+        _loadingFriends = false;
+      });
+    }
   }
 
   Future<void> _searchSpotifyTracks(String query) async {
@@ -224,6 +305,8 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
             ),
           ),
           const SizedBox(height: 16),
+
+          //this should be a dropdown with a list of the user's current friends
           const Text(
             "Receiver Username",
             style: TextStyle(
@@ -235,18 +318,64 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
             ),
           ),
           const SizedBox(height: 8),
-          TextField(
-            controller: _receiverUsernameController,
-            decoration: InputDecoration(
-              hintText: "@username",
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFD9D9D9)),
+
+          //friends dropdown
+          if (_loadingFriends)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: CircularProgressIndicator(),
+            )
+          else
+            DropdownButtonFormField<String>(
+              value: _selectedFriendId,
+              decoration: InputDecoration(
+                hintText: "Select a friend",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Color(0xFFD9D9D9)),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              items: _friends.map((friend) {
+                final id = friend["_id"]?.toString() ?? "";
+                final handle = (friend["spotify_user_id"] ?? friend["username"] ?? "").toString();
+                final name = (friend["name"] ?? "").toString();
+
+                return DropdownMenuItem<String>(
+                  value: id,
+                  child: Text(name.isNotEmpty ? "$name (@$handle)" : "@$handle"),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedFriendId = value;
+
+                  // when user selects from dropdown, also fill in the receiver text box
+                  final selectedFriend = _friends.cast<Map<String, dynamic>?>().firstWhere(
+                        (f) => f?["_id"]?.toString() == value,
+                        orElse: () => null,
+                      );
+
+                  if (selectedFriend != null) {
+                    final handle = (selectedFriend["spotify_user_id"] ??
+                            selectedFriend["username"] ??
+                            "")
+                        .toString();
+
+                    _receiverUsernameController.text = handle;
+                  }
+                });
+              },
             ),
-          ),
+
+          if (_friendsError != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              _friendsError!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ],
           const SizedBox(height: 20),
 
           //mixtape message
@@ -306,7 +435,7 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
                         child: _coverBytes == null
                             ? const Center(
                                 child: Text(
-                                  "Upload\n(soon)",
+                                  "Upload Image",
                                   textAlign: TextAlign.center,
                                 ),
                               )

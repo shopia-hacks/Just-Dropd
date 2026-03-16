@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_dropd/pages/add_mixtape.dart';
 import '../pages/activity_feed.dart';
 import '../pages/countdown.dart';
+import '../pages/add_friends.dart';
 
 class CustomNavBar extends StatelessWidget {
   final String? userId;
@@ -89,6 +90,12 @@ class CustomNavBar extends StatelessWidget {
                             onTap: () {
                               Navigator.pop(context);
                               print("Add friends");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddFriendsPage(userId: userId), //reroute to add mixtape page
+                                ),
+                              );
                             },
                           ),
                           const SizedBox(height: 8),
