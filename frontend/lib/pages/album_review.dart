@@ -127,15 +127,6 @@ Future<void> _searchSpotifyAlbums(String query) async {
    return Column(
      crossAxisAlignment: CrossAxisAlignment.start,
      children: [
-       const Text(
-         "Rating:",
-         style: TextStyle(
-           color: Colors.black,
-           fontSize: 16,
-           fontFamily: 'Inter',
-           fontWeight: FontWeight.w400,
-         ),
-       ),
        const SizedBox(height: 8),
        Row(
          children: List.generate(5, (index) {
@@ -175,49 +166,52 @@ Future<void> _searchSpotifyAlbums(String query) async {
 
 
  Future<void> _submitReview() async {
- if (_selectedAlbum == null) {
-   debugPrint("No album selected");
-   return;
- }
+  if (_selectedAlbum == null) {
+    debugPrint("No album selected");
+    return;
+  }
 
+  final uri = Uri.parse("$_baseUrl/api/album-reviews");
 
- final uri = Uri.parse("$_baseUrl/api/reviews");
+  final payload = {
+  "userId": widget.userId,
+  "spotify_album_id": _selectedAlbum!["spotify_album_id"],
+  "rating": _rating.toDouble(),  // ✅ ensures double
+  "review_text": _reviewController.text,
+  "custom_image_url": _selectedAlbum?["imageUrl"]
+};
 
+  try {
+    final response = await http.post(
+      uri,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(payload),
+    );
 
- final payload = {
-   "userId": widget.userId,
-   "spotify_album_id": _selectedAlbum!["spotify_album_id"],
-   "rating": _rating,
-   "review_text": _reviewController.text,
- };
+    if (response.statusCode == 201) {
+      debugPrint("Review submitted successfully");
 
+      setState(() {
+        _selectedAlbum = null;
+        _reviewController.clear();
+        _rating = 0;
+      });
 
- try {
-   final response = await http.post(
-     uri,
-     headers: {
-       "Content-Type": "application/json",
-     },
-     body: jsonEncode(payload),
-   );
-
-
-   if (response.statusCode == 201) {
-     debugPrint("Review submitted successfully");
-
-
-     // Optional: clear form
-     setState(() {
-       _selectedAlbum = null;
-       _reviewController.clear();
-       _rating = 0;
-     });
-   } else {
-     debugPrint("Failed: ${response.body}");
-   }
- } catch (e) {
-   debugPrint("Error submitting review: $e");
- }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Review submitted!")),
+      );
+    } else {
+      debugPrint("Failed: ${response.body}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed: ${response.body}")),
+      );
+    }
+  } catch (e) {
+    debugPrint("Error submitting review: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: $e")),
+    );
+  }
 }
 
 
