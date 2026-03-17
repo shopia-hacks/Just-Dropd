@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_dropd/shared/nav_bar.dart';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 
 class AddConcertReview extends StatefulWidget {
@@ -19,7 +19,7 @@ class _AddConcertReviewState extends State<AddConcertReview> {
   final TextEditingController locationController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController reviewController = TextEditingController();
-  final List<File> selectedImages = [];
+  final List<Uint8List> selectedImages = [];
 
   double rating = 0.0; // initial rating that is displayed
 
@@ -259,7 +259,7 @@ class _AddConcertReviewState extends State<AddConcertReview> {
               return Stack(
                 children: [
                   ClipRRect(borderRadius: BorderRadius.circular(8), 
-                    child: Image.file(entry.value, width: 80, height: 80, fit: BoxFit.cover),
+                    child: Image.memory(entry.value, width: 80, height: 80, fit: BoxFit.cover),
                   ),
                   Positioned(top: 2, right: 2, 
                     child: GestureDetector(
@@ -297,11 +297,15 @@ class _AddConcertReviewState extends State<AddConcertReview> {
   Future<void> pickImages() async {
     final ImagePicker picker = ImagePicker();
     final List<XFile>? images = await picker.pickMultiImage(limit: 5);
-
-    if (images != null) {
+    final List<Uint8List> newSelectedImages = [];
+    
+    if (images == null || images.isEmpty) return;
+    for (final xfile in images) {
+      if (selectedImages.length >= 5) break; 
+      final bytes = await xfile.readAsBytes();
+      newSelectedImages.add(bytes);
       setState(() {
-        // final remaining = 5-selectedImages.length;
-        selectedImages.addAll(images.map((xfile) => File(xfile.path)));
+        selectedImages.addAll(newSelectedImages);
       });
     }
   }
@@ -328,8 +332,8 @@ class _AddConcertReviewState extends State<AddConcertReview> {
     });
 
     // Attach images
-    for (final image in selectedImages) {
-      request.files.add(await http.MultipartFile.fromPath('images', image.path));
+    for (int i=0; i<selectedImages.length; i++) {
+      request.files.add(http.MultipartFile.fromBytes('images', selectedImages[i], filename: 'image_$i.jpg',),);
     }
 
     try {
@@ -349,8 +353,11 @@ class _AddConcertReviewState extends State<AddConcertReview> {
         reviewController.clear();
         setState(() {
           rating = 0;
+          selectedImages.clear();
         });
       } else {
+        print("Status code: ${response.statusCode}, Body: ${response.body}"); // for debugging
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Failed to submit review. Please try again.")),
         );
