@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get("/me", getMe);
 router.get("/search", searchTracks);
+router.get("/search-albums", searchAlbums)
 
 export default router;
 
