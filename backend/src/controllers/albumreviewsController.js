@@ -9,14 +9,14 @@ export const createAlbumReview = async (req, res) => {
     const payload = {
       userId,
       spotify_album_id,
-      rating: rating, // we'll convert below
+      rating: Number(rating), // we'll convert below
       review_text: review_text || "",
       custom_image_url: custom_image_url || null
     };
     console.log("Payload being inserted into MongoDB:", payload);
 
     // Convert rating to Decimal128 for MongoDB
-    payload.rating = mongoose.Types.Decimal128.fromString(rating.toString());
+    //payload.rating = mongoose.Types.Decimal128.fromString(rating.toString());
 
     // Attempt to insert document
     const review = await AlbumReview.create(payload);
