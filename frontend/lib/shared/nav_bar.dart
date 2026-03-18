@@ -4,6 +4,7 @@ import 'package:just_dropd/pages/add_mixtape.dart';
 import '../pages/activity_feed.dart';
 import '../pages/countdown.dart';
 import '../pages/add_friends.dart';
+import 'package:just_dropd/pages/album_review.dart';
 
 class CustomNavBar extends StatelessWidget {
   final String? userId;
@@ -83,6 +84,11 @@ class CustomNavBar extends StatelessWidget {
                             onTap: () {
                               Navigator.pop(context);
                               print("Add a review");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => AddAlbumReviewPage(userId: userId),
+                                ),
+                              );
                             },
                           ),
                           _ActionTile(

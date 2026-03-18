@@ -12,14 +12,10 @@ const albumReviewSchema = new mongoose.Schema({
     required: true
   },
   rating: {
-    // stored as Decimal128 so MongoDB receives bsonType "double", not Int32
-    // without this, whole numbers like 4 or 5 fail the "double" validator
-    type: mongoose.Schema.Types.Decimal128,
+    type: Number, // change from Decimal128 → Number
     required: true,
-    validate: {
-      validator: (v) => parseFloat(v) >= 0 && parseFloat(v) <= 5,
-      message: "Rating must be between 0 and 5"
-    }
+    min: 0,
+    max: 5
   },
   review_text: {
     type: String,
