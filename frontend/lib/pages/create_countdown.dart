@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:just_dropd/shared/countdown_clock.dart';
 
 const String _baseUrl = "http://localhost:3000";
 
@@ -92,7 +93,7 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
     }
   }
 
-  // ── clear selected artist and show search again ────────────────────────────
+  // ── clear selected artist ──────────────────────────────────────────────────
   void _clearSelectedArtist() {
     setState(() {
       _selectedArtist = null;
@@ -158,6 +159,8 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
         }),
       );
 
+      debugPrint("Submit response: ${resp.statusCode} — ${resp.body}"); 
+
       if (resp.statusCode == 201) {
         if (!mounted) return;
         Navigator.pop(context);
@@ -185,6 +188,9 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
     return "${months[date.month - 1]} ${date.day}, ${date.year}";
   }
 
+  // ── whether to show the live preview ──────────────────────────────────────
+  bool get _showPreview => _selectedArtist != null && _selectedDate != null;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -201,19 +207,22 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
+            // ── LIVE PREVIEW — shown once artist + date are both set ─────────
+            if (_showPreview) ...[
+              _buildPreviewCard(),
+              const SizedBox(height: 28),
+            ],
+
             // ── STEP 1: Artist search ────────────────────────────────────────
             _SectionLabel(number: "1", text: "Search for an artist  *"),
             const SizedBox(height: 10),
 
-            // once an artist is selected, hide the search bar and show the
-            // selected artist card instead
             if (_selectedArtist != null)
               _SelectedArtistCard(
                 artist: _selectedArtist!,
-                onClear: _clearSelectedArtist, // tap X to go back to search
+                onClear: _clearSelectedArtist,
               )
             else ...[
-              // search text field
               TextField(
                 controller: _artistSearchController,
                 decoration: _inputDecoration("e.g. ASAP Rocky, Billie Eilish..."),
@@ -225,7 +234,6 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
                 },
               ),
 
-              // loading spinner
               if (_isSearching) ...[
                 const SizedBox(height: 12),
                 const Center(child: CircularProgressIndicator()),
@@ -233,10 +241,10 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
 
               if (_searchError != null) ...[
                 const SizedBox(height: 6),
-                Text(_searchError!, style: const TextStyle(color: Colors.red, fontSize: 13)),
+                Text(_searchError!,
+                    style: const TextStyle(color: Colors.red, fontSize: 13)),
               ],
 
-              // results list — disappears once an artist is tapped
               if (_artistResults.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 const Text(
@@ -270,12 +278,12 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
                             : const CircleAvatar(child: Icon(Icons.person)),
                         title: Text(
                           artist["artist_name"] ?? "",
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          style:
+                              const TextStyle(fontWeight: FontWeight.w500),
                         ),
                         subtitle: (artist["genres"] as List).isNotEmpty
                             ? Text((artist["genres"] as List).join(", "))
                             : null,
-                        // tapping sets the artist and hides everything above
                         onTap: () => setState(() {
                           _selectedArtist = artist;
                           _artistResults = [];
@@ -298,14 +306,16 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
               onTap: _pickDate,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade400),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today, size: 18, color: Colors.grey),
+                    const Icon(Icons.calendar_today,
+                        size: 18, color: Colors.grey),
                     const SizedBox(width: 10),
                     Text(
                       _selectedDate != null
@@ -313,7 +323,9 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
                           : "Tap to pick a date",
                       style: TextStyle(
                         fontSize: 15,
-                        color: _selectedDate != null ? Colors.black : Colors.grey,
+                        color: _selectedDate != null
+                            ? Colors.black
+                            : Colors.grey,
                       ),
                     ),
                   ],
@@ -324,13 +336,15 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
             const SizedBox(height: 24),
 
             // ── STEP 3: Optional title ───────────────────────────────────────
-            _SectionLabel(number: "3", text: "Album / project title  (optional)"),
+            _SectionLabel(
+                number: "3", text: "Album / project title  (optional)"),
             const SizedBox(height: 10),
             TextField(
               controller: _titleController,
               decoration: _inputDecoration(
-                "Title if known — you can add or update this later",
-              ),
+                  "Title if known — you can add or update this later"),
+              // rebuild so preview title updates live as user types
+              onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 6),
             const Text(
@@ -342,7 +356,8 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
 
             // ── Set as main toggle ───────────────────────────────────────────
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(10),
@@ -377,10 +392,8 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
 
             if (_submitError != null) ...[
               const SizedBox(height: 12),
-              Text(
-                _submitError!,
-                style: const TextStyle(color: Colors.red, fontSize: 13),
-              ),
+              Text(_submitError!,
+                  style: const TextStyle(color: Colors.red, fontSize: 13)),
             ],
 
             const SizedBox(height: 20),
@@ -394,8 +407,7 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                      borderRadius: BorderRadius.circular(10)),
                   disabledBackgroundColor: Colors.grey.shade300,
                 ),
                 onPressed: _isSubmitting ? null : _submit,
@@ -404,11 +416,10 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
+                            strokeWidth: 2, color: Colors.white),
                       )
-                    : const Text("Add Countdown", style: TextStyle(fontSize: 16)),
+                    : const Text("Add Countdown",
+                        style: TextStyle(fontSize: 16)),
               ),
             ),
 
@@ -419,18 +430,111 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
     );
   }
 
+  // ── live preview card ──────────────────────────────────────────────────────
+  // Shown at the top once the user has picked both an artist and a date.
+  // Gives them a real-time preview of what their countdown will look like.
+  Widget _buildPreviewCard() {
+    final artistName = _selectedArtist!["artist_name"] ?? "";
+    final imageUrl   = _selectedArtist!["image_url"] as String?;
+    final title      = _titleController.text.trim();
+
+    // set release time to midnight on the selected date
+    final releaseDateTime = DateTime(
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Preview",
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey,
+            letterSpacing: 1,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF111111),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              // artist image + name + optional album title
+              Row(
+                children: [
+                  if (imageUrl != null)
+                    ClipOval(
+                      child: Image.network(
+                        imageUrl,
+                        width: 52,
+                        height: 52,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  else
+                    const CircleAvatar(
+                      radius: 26,
+                      backgroundColor: Colors.grey,
+                      child: Icon(Icons.person, color: Colors.white),
+                    ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title.isNotEmpty ? title : "Untitled Project",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          artistName,
+                          style: const TextStyle(
+                            color: Color(0xFFAAAAAA),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // the live countdown clock
+              CountdownClock(releaseDate: releaseDateTime),
+
+              const SizedBox(height: 4),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
       hintStyle: const TextStyle(fontSize: 14),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     );
   }
 }
 
-// ── selected artist card — shown instead of the search bar once an artist
-//    is picked. Tap the X to go back and search again. ──────────────────────
+// ── selected artist card ───────────────────────────────────────────────────
 class _SelectedArtistCard extends StatelessWidget {
   final Map<String, dynamic> artist;
   final VoidCallback onClear;
@@ -448,7 +552,6 @@ class _SelectedArtistCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // artist image
           if (artist["image_url"] != null)
             ClipOval(
               child: Image.network(
@@ -460,10 +563,7 @@ class _SelectedArtistCard extends StatelessWidget {
             )
           else
             const CircleAvatar(radius: 23, child: Icon(Icons.person)),
-
           const SizedBox(width: 12),
-
-          // artist name + genres
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -471,20 +571,17 @@ class _SelectedArtistCard extends StatelessWidget {
                 Text(
                   artist["artist_name"] ?? "",
                   style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
+                      fontWeight: FontWeight.w600, fontSize: 15),
                 ),
                 if ((artist["genres"] as List).isNotEmpty)
                   Text(
                     (artist["genres"] as List).join(", "),
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style:
+                        const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
               ],
             ),
           ),
-
-          // X button to clear and search again
           IconButton(
             onPressed: onClear,
             icon: const Icon(Icons.close, size: 20),
@@ -510,25 +607,21 @@ class _SectionLabel extends StatelessWidget {
           width: 24,
           height: 24,
           decoration: const BoxDecoration(
-            color: Colors.black,
-            shape: BoxShape.circle,
-          ),
+              color: Colors.black, shape: BoxShape.circle),
           child: Center(
             child: Text(
               number,
               style: const TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold),
             ),
           ),
         ),
         const SizedBox(width: 8),
-        Text(
-          text,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        ),
+        Text(text,
+            style: const TextStyle(
+                fontSize: 15, fontWeight: FontWeight.w600)),
       ],
     );
   }
