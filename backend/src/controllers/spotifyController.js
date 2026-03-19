@@ -1,7 +1,9 @@
 import User from "../models/User.js"
 import { createSpotifyClient} from "../services/spotifyService.js";
+import { refreshAccessToken } from "../services/spotifyService.js";
 
 
+// GET /spotify/me
 export async function getMe(req, res) {
  try {
    const authHeader = req.headers.authorization;
@@ -216,4 +218,48 @@ export async function searchAlbums(req, res) {
    console.error(err);
    res.status(500).send("Server error");
  }
+}
+
+
+// GET /spotify/search-artist?userId=&q=
+export async function searchArtists(req, res) {
+  try {
+    const { userId, q } = req.query;
+    console.log("searchArtists hit — userId:", userId, "q:", q);
+    if (!userId || !q) return res.status(400).send("userId and q are required");
+
+    let user = await User.findById(userId);
+    if (!user) return res.status(404).send("User not found");
+
+    let spotify = createSpotifyClient(
+      user.spotify_access_token,
+      user.spotify_refresh_token
+    );
+
+    let result;
+    try {
+      result = await spotify.searchArtists(q, { limit: 8 });
+    } catch (err) {
+      if (err.statusCode === 401) {
+        const { accessToken: newToken } = await refreshAccessToken(user.spotify_refresh_token);
+        await User.findByIdAndUpdate(userId, { spotify_access_token: newToken });
+        spotify = createSpotifyClient(newToken, user.spotify_refresh_token);
+        result = await spotify.searchArtists(q, { limit: 8 });
+      } else {
+        throw err;
+      }
+    }
+
+    const artists = (result.body.artists?.items ?? []).map((a) => ({
+      spotify_artist_id: a.id,
+      artist_name:       a.name,
+      image_url:         a.images?.[0]?.url ?? null,
+      genres:            a.genres?.slice(0, 2) ?? [],
+    }));
+
+    res.json({ artists });
+  } catch (err) {
+    console.error("Spotify artist search error:", err.message);
+    res.status(500).send(err.message);
+  }
 }
