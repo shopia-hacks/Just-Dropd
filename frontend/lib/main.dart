@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:just_dropd/services/api_service.dart';
 
 void main() {
   usePathUrlStrategy();
@@ -29,6 +30,13 @@ void main() {
           );
 
         case '/createProfile': //create profile page (after you are logged in/inserted into MongoDB)
+          return MaterialPageRoute(
+            builder: (_) => CreateProfileRoute(
+              userId: uri.queryParameters['userId'],
+            ),
+          );
+
+        case '/profile': //profile page (after you are logged in/inserted into MongoDB)
           return MaterialPageRoute(
             builder: (_) => CreateProfileRoute(
               userId: uri.queryParameters['userId'],
@@ -210,12 +218,26 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
   //supposed to use FutureMap, FutureBuilder, _fetchUser, etc when we want to pull data from mongoDB
   //these methods will be good for when we add in editable things like changing bio, name, etc
   late Future<Map<String, dynamic>> _userFuture;
+  List<dynamic> concertReviews = [];
 
   @override
   void initState() {
     super.initState();
     //start fetching user on this line
     _userFuture = _fetchUser();
+    _loadConcertReviews();
+  }
+
+  Future<void> _loadConcertReviews() async {
+    if (widget.userId == null) return;
+    try {
+      final reviews = await ApiService.fetchConcertReviews(widget.userId!);
+      setState(() {
+        concertReviews = reviews;
+      });
+    } catch (e) {
+      print("Error fetching concert reviews: $e");
+    }
   }
 
   //calls the backend to get the user from MongoDB
@@ -271,84 +293,167 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
               : const NetworkImage("https://placehold.co/156x158");
 
           //building the UI using the fetched data above
-          return Container(
-            width: 551,
-            height: 225,
-            clipBehavior: Clip.antiAlias,
-            decoration: const BoxDecoration(color: Colors.white),
-            child: Stack(
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Positioned(
-                  left: 248,
-                  top: 152,
-                  child: SizedBox(
-                    width: 283,
-                    height: 30,
-                    child: Text(
-                      'Hi I’m $name! This is my bio',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w400,
+                Container(
+                  width: 551,
+                  height: 225,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: const BoxDecoration(color: Colors.white),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 248,
+                        top: 152,
+                        child: SizedBox(
+                          width: 283,
+                          height: 30,
+                          child: Text(
+                            'Hi I\’m $name! This is my bio',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      Positioned(
+                        left: 248,
+                        top: 112,
+                        child: SizedBox(
+                          width: 306,
+                          height: 27,
+                          child: Text(
+                            '@$username',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 20,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 248,
+                        top: 60,
+                        child: SizedBox(
+                          width: 375,
+                          height: 57,
+                          child: Text(
+                            name,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 36,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 55,
+                        top: 38,
+                        child: Container(
+                          width: 156,
+                          height: 158,
+                          decoration: ShapeDecoration(
+                            image: DecorationImage(
+                              image: imageProvider,
+                              fit: BoxFit.cover,
+                            ),
+                            shape: const OvalBorder(),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Positioned(
-                  left: 248,
-                  top: 112,
-                  child: SizedBox(
-                    width: 306,
-                    height: 27,
-                    child: Text(
-                      '@$username',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w400,
-                      ),
+                
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  child: Text(
+                    "My Concert Reviews",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400),
                     ),
                   ),
-                ),
-                Positioned(
-                  left: 248,
-                  top: 60,
-                  child: SizedBox(
-                    width: 375,
-                    height: 57,
-                    child: Text(
-                      name,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 36,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w400,
-                      ),
+
+                  concertReviews.isEmpty
+                    ? const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text("No concert reviews yet."),
+                    )
+                    : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: concertReviews.length,
+                      itemBuilder: (context, index) {
+                        final review = concertReviews[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start, 
+                              children: [
+                                Text(review['artist_name'] ?? '', 
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                                Text(review['title'] ?? '',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                                const SizedBox(height: 4),
+                                Text("Location: ${review['location'] ?? ''}"), 
+                                Text("Date: ${review['date']?.toString().substring(0,10) ?? ''}"),
+                                Text("${review['rating'] ?? ''}"),
+                                const SizedBox(height: 8),
+                                Text(review['review_text'] ?? ''),
+
+                                // add this
+                                if ((review['image_urls'] as List?)?.isNotEmpty ?? false)
+                                  SizedBox(
+                                    height: 100,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: (review['image_urls'] as List).length,
+                                      itemBuilder: (context, imgIndex) {
+                                        final imageUrl = "http://localhost:3000/${review['image_urls'][imgIndex]}";
+                                        return Padding(
+                                          padding: const EdgeInsets.only(right: 8),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(8),
+                                            child: Image.network(
+                                              imageUrl,
+                                              width: 100,
+                                              height: 100,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) =>
+                                                const Icon(Icons.broken_image, size: 40),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                              ], // children
+                            ),
+                          ),
+                        ); // Ticket
+                       }, // itemBuilder
                     ),
-                  ),
-                ),
-                Positioned(
-                  left: 55,
-                  top: 38,
-                  child: Container(
-                    width: 156,
-                    height: 158,
-                    decoration: ShapeDecoration(
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.cover,
-                      ),
-                      shape: const OvalBorder(),
-                    ),
-                  ),
-                ),
-              ],
+                ],
             ),
           );
         },
-      ),
+      ), // FutureBuilder
     );
   }
 }

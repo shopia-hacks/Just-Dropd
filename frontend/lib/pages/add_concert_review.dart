@@ -355,6 +355,12 @@ class _AddConcertReviewState extends State<AddConcertReview> {
           rating = 0;
           selectedImages.clear();
         });
+
+        if (!mounted) return; // Check if widget is still in the tree before navigating
+        Navigator.pushReplacementNamed(
+          context,
+          '/profile?userId=${widget.userId}',
+          ); // Go back to previous screen after submission
       } else {
         print("Status code: ${response.statusCode}, Body: ${response.body}"); // for debugging
 

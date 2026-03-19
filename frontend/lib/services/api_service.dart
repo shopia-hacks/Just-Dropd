@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -12,6 +13,17 @@ class ApiService {
       return res.body;
     } else {
       throw Exception("Backend not reachable");
+    }
+  }
+
+  static Future<List<dynamic>> fetchConcertReviews(String userId) async {
+    final uri = Uri.parse("$baseUrl/concert-reviews/user/$userId");
+    final res = await http.get(uri);
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body);
+    } else {
+      throw Exception("Failed to fetch reviews");
     }
   }
 }

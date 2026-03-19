@@ -28,6 +28,7 @@ app.use("/friendships", friendshipRoutes);
 app.use("/mixtapes", mixtapeRoutes);
 app.use("/album-reviews", albumReviewRoutes);
 app.use("/concert-reviews", concertReviewRoutes);
+app.use('/uploads', express.static('uploads'));
 app.use("/countdowns", countdownRoutes);
 
 export default app;
