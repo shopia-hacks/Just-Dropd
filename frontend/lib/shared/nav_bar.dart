@@ -5,6 +5,7 @@ import '../pages/activity_feed.dart';
 import '../pages/countdown.dart';
 import '../pages/add_friends.dart';
 import 'package:just_dropd/pages/album_review.dart';
+import '../pages/create_countdown.dart';
 
 class CustomNavBar extends StatelessWidget {
   final String? userId;
@@ -67,7 +68,7 @@ class CustomNavBar extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _ActionTile(
-                            title: "Add a mixtape",
+                            title: "Add a mix",
                             onTap: () {
                               Navigator.pop(context); // close the sheet
                               print("Add a mixtape");
@@ -87,6 +88,30 @@ class CustomNavBar extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => AddAlbumReviewPage(userId: userId),
+                                ),
+                              );
+                            },
+                          ),
+                          _ActionTile(
+                            title: "Add a countdown",
+                            onTap: () {
+                              Navigator.pop(context); // close the sheet
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CreateCountdownPage(userId: userId),
+                                ),
+                              );
+                            },
+                          ),
+                          _ActionTile(
+                            title: "Add a countdown",
+                            onTap: () {
+                              Navigator.pop(context); // close the sheet
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CreateCountdownPage(userId: userId),
                                 ),
                               );
                             },

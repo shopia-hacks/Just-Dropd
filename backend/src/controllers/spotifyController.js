@@ -2,6 +2,7 @@ import User from "../models/User.js"
 import { createSpotifyClient} from "../services/spotifyService.js";
 
 
+// GET /spotify/me
 export async function getMe(req, res) {
  try {
    const authHeader = req.headers.authorization;
