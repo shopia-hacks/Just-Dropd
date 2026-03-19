@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../pages/profile_page.dart';
 
 void main() {
@@ -38,32 +39,47 @@ void main() {
 
 final Uri spotifyLoginUrl = Uri.parse("http://localhost:3000/login");
 
-// -------------------- HOME PAGE ---------------------
 class HomeRoute extends StatelessWidget {
   const HomeRoute({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('JustDropd'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-      ),
       body: Center(
-        child: ElevatedButton(
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(Colors.green),
-            foregroundColor: WidgetStateProperty.all(Colors.white),
-          ),
-          child: const Text('Login with Spotify'),
-          onPressed: () async {
-            await launchUrl(
-              spotifyLoginUrl,
-              mode: LaunchMode.platformDefault,
-              webOnlyWindowName: '_self',
-            );
-          },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'JustDropd',
+              style: GoogleFonts.pacifico(
+                fontSize: 44,
+                color: const Color(0xFFFF8AD2),
+              ),
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                  const Color(0xFFFF8AD2),
+                ),
+                foregroundColor: WidgetStateProperty.all(Colors.white),
+                padding: WidgetStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                ),
+              ),
+              child: const Text(
+                'Login with Spotify',
+                style: TextStyle(fontSize: 16),
+              ),
+              onPressed: () async {
+                await launchUrl(
+                  spotifyLoginUrl,
+                  mode: LaunchMode.platformDefault,
+                  webOnlyWindowName: '_self',
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
