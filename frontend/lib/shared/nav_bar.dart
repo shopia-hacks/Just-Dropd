@@ -105,18 +105,6 @@ class CustomNavBar extends StatelessWidget {
                             },
                           ),
                           _ActionTile(
-                            title: "Add a countdown",
-                            onTap: () {
-                              Navigator.pop(context); // close the sheet
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CreateCountdownPage(userId: userId),
-                                ),
-                              );
-                            },
-                          ),
-                          _ActionTile(
                             title: "Add friends",
                             onTap: () {
                               Navigator.pop(context);
