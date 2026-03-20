@@ -7,16 +7,44 @@ const countdownSchema = new mongoose.Schema({
     ref: "User",
     required: true
   },
-  spotify_album_id: {
+
+  // ── required fields ───────────────────────────────────────────────────────
+  artist_name: {
     type: String,
+    required: true,
+    trim: true
+  },
+  release_date: {
+    type: Date,
     required: true
   },
-  // true = this is the user's pinned/main profile countdown (only one allowed per user)
+
+  // ── optional fields (can be filled in later by the user) ─────────────────
+  album_title: {
+    type: String,
+    trim: true,
+    default: null
+  },
+  cover_art_url: {
+    type: String,
+    default: null       // Spotify artist image URL or user-provided URL
+  },
+
+  // ── spotify fields (optional, filled in if/when album appears on Spotify) ─
+  spotify_artist_id: {
+    type: String,
+    default: null
+  },
+  spotify_album_id: {
+    type: String,
+    default: null
+  },
+
+  // ── display options ───────────────────────────────────────────────────────
   is_main: {
     type: Boolean,
-    default: false
+    default: false      // true = pinned at top of user's profile
   },
-  // clock style the user picked, e.g. "digital_red", "analog_pink"
   clock_style: {
     type: String,
     default: "digital_default"
@@ -25,8 +53,7 @@ const countdownSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// a user can only have one countdown per album
-countdownSchema.index({ userId: 1, spotify_album_id: 1 }, { unique: true });
+// Prevent a user from making duplicate countdowns for the same artist + date
+countdownSchema.index({ userId: 1, artist_name: 1, release_date: 1 }, { unique: true });
 
 export default mongoose.model("Countdown", countdownSchema);
-

@@ -35,4 +35,20 @@ export async function exchangeCodeForTokens(code) {
   };
 }
 
+export async function refreshAccessToken(refreshToken) {
+  const spotifyApi = new SpotifyWebApi({
+    clientId: process.env.SPOTIFY_CLIENT_ID,
+    clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+    redirectUri: process.env.SPOTIFY_REDIRECT_URI,
+  });
 
+  spotifyApi.setRefreshToken(refreshToken);
+
+  const data = await spotifyApi.refreshAccessToken();
+  return {
+    accessToken: data.body.access_token,
+    // spotify sometimes returns a new refresh token, sometimes not
+    refreshToken: data.body.refresh_token,
+    expiresIn: data.body.expires_in,
+  };
+}

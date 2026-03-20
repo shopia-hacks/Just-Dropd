@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:just_dropd/pages/add_mixtape.dart';
 import '../pages/activity_feed.dart';
 import '../pages/countdown.dart';
+import '../pages/add_friends.dart';
+import 'package:just_dropd/pages/album_review.dart';
+import '../pages/create_countdown.dart';
 import '../pages/add_concert_review.dart';
 
 class CustomNavBar extends StatelessWidget {
@@ -65,10 +69,16 @@ class CustomNavBar extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _ActionTile(
-                            title: "Add a mixtape",
+                            title: "Add a mix",
                             onTap: () {
                               Navigator.pop(context); // close the sheet
                               print("Add a mixtape");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddMixtapePage(userId: userId), //reroute to add mixtape page
+                                ),
+                              );
                             },
                           ),
                           _ActionTile(
@@ -76,6 +86,11 @@ class CustomNavBar extends StatelessWidget {
                             onTap: () {
                               Navigator.pop(context);
                               print("Add an album review");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => AddAlbumReviewPage(userId: userId),
+                                ),
+                              );
                             },
                           ),
                           _ActionTile(
@@ -83,6 +98,23 @@ class CustomNavBar extends StatelessWidget {
                             onTap: () {
                               Navigator.pop(context);
                               print("Add a concert review");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => AddConcertReview(userId: userId ?? "unknown"),
+                                ),
+                              );
+                            },
+                          ),
+                          _ActionTile(
+                            title: "Add a countdown",
+                            onTap: () {
+                              Navigator.pop(context); // close the sheet
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CreateCountdownPage(userId: userId),
+                                ),
+                              );
                               Navigator.push( // reroute to add concert review page once pressed
                                 context,
                                 MaterialPageRoute(
@@ -96,6 +128,12 @@ class CustomNavBar extends StatelessWidget {
                             onTap: () {
                               Navigator.pop(context);
                               print("Add friends");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddFriendsPage(userId: userId), //reroute to add mixtape page
+                                ),
+                              );
                             },
                           ),
                           const SizedBox(height: 8),
