@@ -1,10 +1,22 @@
 // controllers/concertReviewsController.js
 import ConcertReview from "../models/ConcertReview.js";
+import mongoose from "mongoose";
 
 // create a new concert review
 export async function createConcertReview(req, res) {
+  console.log("req.body:", req.body);
+  console.log("req.files:", req.files);
   try {
-    const review = new ConcertReview(req.body);
+    const imagePaths = req.files?.map(f => f.path) ?? [];
+    
+    const review = new ConcertReview({ 
+      ...req.body, 
+      userId: new mongoose.Types.ObjectId(req.body.userId),
+      date: new Date(req.body.date),
+      rating: parseFloat(req.body.rating),
+      image_urls: imagePaths 
+    });
+
     await review.save();
     res.status(201).json(review);
   } catch (err) {

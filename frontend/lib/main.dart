@@ -19,11 +19,11 @@ void main() {
         case '/profile':
           return MaterialPageRoute(
             builder: (_) => CreateProfileRoute(
-              userId: uri.queryParameters['userId'] ?? '',
+              userId: uri.queryParameters['userId'],
             ),
           );
 
-        case '/createProfile':
+        case '/createProfile': //profile page (after you are logged in/inserted into MongoDB)
           return MaterialPageRoute(
             builder: (_) => CreateProfileRoute(
               userId: uri.queryParameters['userId'],

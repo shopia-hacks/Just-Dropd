@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:just_dropd/shared/nav_bar.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:just_dropd/services/api_service.dart';
 
 class CreateProfileRoute extends StatefulWidget {
   final String? userId;
@@ -14,11 +15,25 @@ class CreateProfileRoute extends StatefulWidget {
 
 class _CreateProfileRouteState extends State<CreateProfileRoute> {
   late Future<Map<String, dynamic>> _userFuture;
+  List<dynamic> concertReviews = [];
 
   @override
   void initState() {
     super.initState();
     _userFuture = _fetchUser();
+    _loadConcertReviews();
+  }
+
+  Future<void> _loadConcertReviews() async {
+    if (widget.userId == null) return;
+    try {
+      final reviews = await ApiService.fetchConcertReviews(widget.userId!);
+      setState(() {
+        concertReviews = reviews;
+      });
+    } catch (e) {
+      print("Error fetching concert reviews: $e");
+    }
   }
 
   Future<Map<String, dynamic>> _fetchUser() async {
@@ -176,6 +191,80 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
 
                         ],
                       ),
+                    ),
+
+                    // ================= MY CONCERT REVIEWS SECTION =================
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      child: Text("My Concert Reviews",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400),
+                      ),
+                    ),
+
+                    concertReviews.isEmpty
+                      ? const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text("No concert reviews yet."),
+                    )
+                    : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: concertReviews.length,
+                      itemBuilder: (context, index) {
+                        final review = concertReviews[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                          child: Padding(padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start, 
+                              children: [
+                                Text(review['artist_name'] ?? '', 
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                                Text(review['title'] ?? '',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                                const SizedBox(height: 4),
+                                Text("Location: ${review['location'] ?? ''}"), 
+                                Text("Date: ${review['date']?.toString().substring(0,10) ?? ''}"),
+                                Text("${review['rating'] ?? ''}"),
+                                const SizedBox(height: 8),
+                                Text(review['review_text'] ?? ''),
+
+                                if ((review['image_urls'] as List?)?.isNotEmpty ?? false)
+                                  SizedBox(
+                                    height: 100,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: (review['image_urls'] as List).length,
+                                      itemBuilder: (context, imgIndex) {
+                                        final imageUrl = "http://localhost:3000/${review['image_urls'][imgIndex]}";
+                                        return Padding(
+                                          padding: const EdgeInsets.only(right: 8),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(8),
+                                            child: Image.network(
+                                              imageUrl,
+                                              width: 100,
+                                              height: 100,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) =>
+                                                const Icon(Icons.broken_image, size: 40),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

@@ -6,6 +6,7 @@ import '../pages/countdown.dart';
 import '../pages/add_friends.dart';
 import 'package:just_dropd/pages/album_review.dart';
 import '../pages/create_countdown.dart';
+import '../pages/add_concert_review.dart';
 
 class CustomNavBar extends StatelessWidget {
   final String? userId;
@@ -81,10 +82,10 @@ class CustomNavBar extends StatelessWidget {
                             },
                           ),
                           _ActionTile(
-                            title: "Add a review",
+                            title: "Add an album review",
                             onTap: () {
                               Navigator.pop(context);
-                              print("Add a review");
+                              print("Add an album review");
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => AddAlbumReviewPage(userId: userId),
@@ -93,13 +94,25 @@ class CustomNavBar extends StatelessWidget {
                             },
                           ),
                           _ActionTile(
+                            title: "Add a concert review",
+                            onTap: () {
+                              Navigator.pop(context);
+                              print("Add a concert review");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => AddConcertReview(userId: userId ?? "unknown"),
+                                ),
+                              );
+                            },
+                          ),
+                          _ActionTile(
                             title: "Add a countdown",
                             onTap: () {
                               Navigator.pop(context); // close the sheet
-                              Navigator.push(
+                              Navigator.push( // reroute to add concert review page once pressed
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => CreateCountdownPage(userId: userId),
+                                  builder: (context) => CreateCountdownPage(userId: userId ?? "unknown"), //reroute to add concert review page once pressed
                                 ),
                               );
                             },
