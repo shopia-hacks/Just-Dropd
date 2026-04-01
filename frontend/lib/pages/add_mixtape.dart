@@ -44,6 +44,11 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
   String? _friendsError;
   String? _selectedFriendId; //the friend they select from the drop down (mongo db id)
 
+  //submitting to database states:
+  bool _creatingMixtape = false;
+  String? _createMixtapeError;
+  String? _createMixtapeSuccess;
+
   String get _baseUrl {
     return "http://localhost:3000";
   }
@@ -229,6 +234,84 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
       _searchResults.clear();
       _searchError = null;
     });
+  }
+
+  //helper function to submit a mixtape to the database
+  Future<void> _createMixtape() async {
+    if (widget.userId == null) return;
+
+    final title = _mixtapeTitleController.text.trim();
+    final message = _mixtapeMessageController.text.trim();
+    final receiverId = _selectedFriendId;
+
+    if (title.isEmpty) {
+      setState(() => _createMixtapeError = "Please enter a mixtape title.");
+      return;
+    }
+
+    if (receiverId == null || receiverId.isEmpty) {
+      setState(() => _createMixtapeError = "Please select a friend.");
+      return;
+    }
+
+    if (_songs.isEmpty) {
+      setState(() => _createMixtapeError = "Please add at least one song.");
+      return;
+    }
+
+    final tracks = _songs.asMap().entries.map((entry) {
+      return {
+        "spotify_track_id": entry.value["spotify_track_id"],
+        "track_order": entry.key + 1,
+      };
+    }).toList();
+
+    setState(() {
+      _creatingMixtape = true;
+      _createMixtapeError = null;
+      _createMixtapeSuccess = null;
+    });
+
+    try {
+      final uri = Uri.parse("$_baseUrl/mixtapes");
+
+      final resp = await http.post(
+        uri,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "title": title,
+          "creatorId": widget.userId,
+          "receiverId": receiverId,
+          "message": message,
+          "type": (_mixtapeType ?? "CD").toLowerCase(),
+          "visibility": "public",
+          "cover_image_url": "", // later replace with uploaded image url
+          "tracks": tracks,
+        }),
+      );
+
+      if (resp.statusCode != 201) {
+        throw Exception("Create mixtape failed (${resp.statusCode}): ${resp.body}");
+      }
+
+      setState(() {
+        _createMixtapeSuccess = "Mixtape sent!";
+        _mixtapeTitleController.clear();
+        _mixtapeMessageController.clear();
+        _receiverUsernameController.clear();
+        _songSearchController.clear();
+        _songs.clear();
+        _searchResults.clear();
+        _selectedFriendId = null;
+        _mixtapeType = null;
+        _coverFile = null;
+        _coverBytes = null;
+      });
+    } catch (e) {
+      setState(() => _createMixtapeError = e.toString());
+    } finally {
+      setState(() => _creatingMixtape = false);
+    }
   }
 
   @override
@@ -646,27 +729,17 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
                 shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              onPressed: () {
-                // this is what we’ll send to backend/database for Mixtape.tracks
-                final tracks = _songs.asMap().entries.map((entry) {
-                  return {
-                    "spotify_track_id": entry.value["spotify_track_id"],
-                    "track_order": entry.key + 1,
-                  };
-                }).toList();
-
-                debugPrint("Create mixtape pressed");
-                debugPrint("Title: ${_mixtapeTitleController.text}");
-                debugPrint("Message: ${_mixtapeMessageController.text}");
-                debugPrint("Receiver: ${_receiverUsernameController.text}");
-                debugPrint("Type: $_mixtapeType");
-                debugPrint("Tracks payload: $tracks");
-                debugPrint("Cover file: ${_coverFile?.name}");
-              },
-              child: const Text(
-                "Create Mixtape",
-                style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: 'Roboto'),
-              ),
+              onPressed: _creatingMixtape ? null : _createMixtape,
+                child: _creatingMixtape
+                  ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text(
+                      "Create Mixtape",
+                      style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: 'Roboto'),
+                    ),
             ),
           ),
         ],

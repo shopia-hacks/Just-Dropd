@@ -29,7 +29,16 @@ const mixtapeSchema = new mongoose.Schema({
     required: true
   },
   spotify_playlist_id: {
-    type: String
+    type: String,
+    default: ""
+  },
+  spotify_playlist_url: {
+    type: String,
+    default: ""
+  },
+  cover_image_url: {
+    type: String,
+    default: ""
   },
   icon_type: {
     type: String,        // e.g. "cd_1", "cassette_2" — matches icon library
