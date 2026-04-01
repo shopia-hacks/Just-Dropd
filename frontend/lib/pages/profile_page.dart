@@ -3,6 +3,7 @@ import 'package:just_dropd/shared/nav_bar.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:just_dropd/services/api_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CreateProfileRoute extends StatefulWidget {
   final String? userId;
@@ -15,12 +16,14 @@ class CreateProfileRoute extends StatefulWidget {
 
 class _CreateProfileRouteState extends State<CreateProfileRoute> {
   late Future<Map<String, dynamic>> _userFuture;
+  late Future<List<dynamic>> _receivedMixtapesFuture;
   List<dynamic> concertReviews = [];
 
   @override
   void initState() {
     super.initState();
     _userFuture = _fetchUser();
+    _receivedMixtapesFuture = _fetchReceivedMixtapes();
     _loadConcertReviews();
   }
 
@@ -33,6 +36,32 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
       });
     } catch (e) {
       print("Error fetching concert reviews: $e");
+    }
+  }
+
+  Future<List<dynamic>> _fetchReceivedMixtapes() async {
+    final id = widget.userId;
+
+    if (id == null || id.isEmpty) {
+      throw Exception("Missing userId in route");
+    }
+
+    final uri = Uri.parse("http://localhost:3000/mixtapes/shelf/$id");
+
+    final resp = await http.get(uri, headers: {
+      "Content-Type": "application/json",
+    });
+
+    if (resp.statusCode != 200) {
+      throw Exception("Failed to load mixtapes: ${resp.statusCode} ${resp.body}");
+    }
+
+    final data = jsonDecode(resp.body);
+
+    if (data is List) {
+      return data;
+    } else {
+      throw Exception("Expected a list of mixtapes");
     }
   }
 
@@ -81,7 +110,7 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
           final imageProvider =
               (profileImageUrl != null && profileImageUrl.isNotEmpty)
                   ? NetworkImage(profileImageUrl)
-                  : const NetworkImage("https://placehold.co/156x158");
+                  : const NetworkImage("https://placehold.co/156x158.png");
 
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -179,16 +208,73 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                        
-                          // placeholder shelf row for now
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 20),
-                            child: Text(
-                              "No accepted mixtapes yet.",
-                              style: TextStyle(color: Colors.black54, fontSize: 16),
-                            ),
-                          ),
+                          FutureBuilder<List<dynamic>>(
+                            future: _receivedMixtapesFuture,
+                            builder: (context, mixtapeSnapshot) {
+                              if (mixtapeSnapshot.connectionState != ConnectionState.done) {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 20),
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
 
+                              if (mixtapeSnapshot.hasError) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 20),
+                                  child: Text(
+                                    "Error loading mixtapes: ${mixtapeSnapshot.error}",
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                );
+                              }
+
+                              final acceptedMixtapes = mixtapeSnapshot.data ?? [];
+
+                              if (acceptedMixtapes.isEmpty) {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 20),
+                                  child: Text(
+                                    "No accepted mixtapes yet.",
+                                    style: TextStyle(color: Colors.black54, fontSize: 16),
+                                  ),
+                                );
+                              }
+
+                              return SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: acceptedMixtapes.map((mixtape) {
+                                    final title = mixtape['title'] ?? 'Untitled Mixtape';
+
+                                    final senderName =
+                                        mixtape['creatorId'] is Map<String, dynamic>
+                                            ? (mixtape['creatorId']['username'] ??
+                                                mixtape['creatorId']['name'] ??
+                                                'Unknown sender')
+                                            : 'Unknown sender';
+
+                                    final imageUrl =
+                                        mixtape['cover_image_url'] != null &&
+                                                mixtape['cover_image_url'].toString().isNotEmpty
+                                            ? mixtape['cover_image_url']
+                                            : 'https://placehold.co/136x136.png';
+
+                                    final playlistUrl = mixtape['spotify_playlist_url'] ?? '';
+
+                                    return Padding(
+                                      padding: const EdgeInsets.only(right: 16),
+                                      child: _MixtapeShelfCard(
+                                        title: title,
+                                        sender: '@$senderName',
+                                        imageUrl: imageUrl,
+                                        playlistUrl: playlistUrl,
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -196,76 +282,84 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
                     // ================= MY CONCERT REVIEWS SECTION =================
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      child: Text("My Concert Reviews",
+                      child: Text(
+                        "My Concert Reviews",
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 20,
                           fontFamily: 'Inter',
-                          fontWeight: FontWeight.w400),
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
 
                     concertReviews.isEmpty
-                      ? const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text("No concert reviews yet."),
-                    )
-                    : ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: concertReviews.length,
-                      itemBuilder: (context, index) {
-                        final review = concertReviews[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                          child: Padding(padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start, 
-                              children: [
-                                Text(review['artist_name'] ?? '', 
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                ),
-                                Text(review['title'] ?? '',
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                                const SizedBox(height: 4),
-                                Text("Location: ${review['location'] ?? ''}"), 
-                                Text("Date: ${review['date']?.toString().substring(0,10) ?? ''}"),
-                                Text("${review['rating'] ?? ''}"),
-                                const SizedBox(height: 8),
-                                Text(review['review_text'] ?? ''),
-
-                                if ((review['image_urls'] as List?)?.isNotEmpty ?? false)
-                                  SizedBox(
-                                    height: 100,
-                                    child: ListView.builder(
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: (review['image_urls'] as List).length,
-                                      itemBuilder: (context, imgIndex) {
-                                        final imageUrl = "http://localhost:3000/${review['image_urls'][imgIndex]}";
-                                        return Padding(
-                                          padding: const EdgeInsets.only(right: 8),
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(8),
-                                            child: Image.network(
-                                              imageUrl,
-                                              width: 100,
-                                              height: 100,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) =>
-                                                const Icon(Icons.broken_image, size: 40),
-                                            ),
+                        ? const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Text("No concert reviews yet."),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: concertReviews.length,
+                            itemBuilder: (context, index) {
+                              final review = concertReviews[index];
+                              return Card(
+                                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        review['artist_name'] ?? '',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        review['title'] ?? '',
+                                        style: const TextStyle(color: Colors.grey),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text("Location: ${review['location'] ?? ''}"),
+                                      Text("Date: ${review['date']?.toString().substring(0, 10) ?? ''}"),
+                                      Text("${review['rating'] ?? ''}"),
+                                      const SizedBox(height: 8),
+                                      Text(review['review_text'] ?? ''),
+                                      if ((review['image_urls'] as List?)?.isNotEmpty ?? false)
+                                        SizedBox(
+                                          height: 100,
+                                          child: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: (review['image_urls'] as List).length,
+                                            itemBuilder: (context, imgIndex) {
+                                              final imageUrl =
+                                                  "http://localhost:3000/${review['image_urls'][imgIndex]}";
+                                              return Padding(
+                                                padding: const EdgeInsets.only(right: 8),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  child: Image.network(
+                                                    imageUrl,
+                                                    width: 100,
+                                                    height: 100,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context, error, stackTrace) =>
+                                                        const Icon(Icons.broken_image, size: 40),
+                                                  ),
+                                                ),
+                                              );
+                                            },
                                           ),
-                                        );
-                                      },
-                                    ),
+                                        ),
+                                    ],
                                   ),
-                              ],
-                            ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ],
                 ),
               ),
@@ -282,58 +376,73 @@ class _MixtapeShelfCard extends StatelessWidget {
   final String title;
   final String sender;
   final String imageUrl;
+  final String playlistUrl;
 
   const _MixtapeShelfCard({
     required this.title,
     required this.sender,
     required this.imageUrl,
+    required this.playlistUrl,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 160,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
-        border: Border.all(color: const Color(0xFFD9D9D9)),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              imageUrl,
-              width: 136,
-              height: 136,
-              fit: BoxFit.cover,
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () async {
+        if (playlistUrl.isEmpty) return;
+
+        final uri = Uri.parse(playlistUrl);
+        await launchUrl(
+          uri,
+          mode: LaunchMode.platformDefault,
+          webOnlyWindowName: '_blank',
+        );
+      },
+      child: Container(
+        width: 160,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF9F9F9),
+          border: Border.all(color: const Color(0xFFD9D9D9)),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                imageUrl,
+                width: 136,
+                height: 136,
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 15,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w500,
+            const SizedBox(height: 10),
+            Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 15,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            sender,
-            style: const TextStyle(
-              color: Colors.black54,
-              fontSize: 13,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w400,
+            const SizedBox(height: 4),
+            Text(
+              sender,
+              style: const TextStyle(
+                color: Colors.black54,
+                fontSize: 13,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w400,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
