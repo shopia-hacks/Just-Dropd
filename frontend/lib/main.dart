@@ -57,14 +57,13 @@ class HomeRoute extends StatelessWidget {
         foregroundColor: Colors.white, //text and icon colors
       ), // AppBar
 
-      
       body: Center( //centers the buttons on the screen
-        child: 
+        child:
             ElevatedButton(
               style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(Colors.green), //custom background color
                   foregroundColor: WidgetStateProperty.all(Colors.white)), //custom text color
-              
+
               //text shown on the button
               child: const Text('Login with Spotify'),
 
@@ -75,7 +74,7 @@ class HomeRoute extends StatelessWidget {
                 await launchUrl(spotifyLoginUrl, mode: LaunchMode.platformDefault, webOnlyWindowName: '_self');
               },
             )
-          )// ElevatedButton
+      )// ElevatedButton
     );
   }
 }
@@ -97,7 +96,7 @@ class LoginRoute extends StatelessWidget {
     final uri = Uri.base;
     final userId = uri.queryParameters['userId'];
     final name = uri.queryParameters['name'];
-    
+
     // if userId exists in the URL, login was successful
     if (userId != null) {
       // Login worked! Show success and go to profile
@@ -139,7 +138,7 @@ class LoginRoute extends StatelessWidget {
         ),
       );
     }
-    
+
     // If no userId in URL, something went wrong
     return Scaffold(
       appBar: AppBar(
@@ -182,7 +181,7 @@ class LoginRoute extends StatelessWidget {
           style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all(Colors.green),
               foregroundColor: WidgetStateProperty.all(Colors.white)),
-          child: const Text('Create Profile'), 
+          child: const Text('Create Profile'),
           onPressed: () {
             Navigator.pushNamed(context, '/createProfile');
           },
@@ -205,11 +204,39 @@ class CreateProfileRoute extends StatefulWidget {
 
 class _CreateProfileRouteState extends State<CreateProfileRoute> {
   late Future<Map<String, dynamic>> _userFuture;
+  late Future<List<dynamic>> _receivedMixtapesFuture;
 
   @override
   void initState() {
     super.initState();
     _userFuture = _fetchUser();
+    _receivedMixtapesFuture = _fetchReceivedMixtapes();
+  }
+
+  Future<List<dynamic>> _fetchReceivedMixtapes() async {
+    final id = widget.userId;
+
+    if (id == null || id.isEmpty) {
+      throw Exception("Missing userId in route");
+    }
+
+    final uri = Uri.parse("http://localhost:3000/mixtapes/shelf/$id");
+
+    final resp = await http.get(uri, headers: {
+      "Content-Type": "application/json",
+    });
+
+    if (resp.statusCode != 200) {
+      throw Exception("Failed to load mixtapes: ${resp.statusCode} ${resp.body}");
+    }
+
+    final data = jsonDecode(resp.body);
+
+    if (data is List) {
+      return data;
+    } else {
+      throw Exception("Expected a list of mixtapes");
+    }
   }
 
   Future<Map<String, dynamic>> _fetchUser() async {
@@ -257,7 +284,7 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
           final imageProvider =
               (profileImageUrl != null && profileImageUrl.isNotEmpty)
                   ? NetworkImage(profileImageUrl)
-                  : const NetworkImage("https://placehold.co/156x158");
+                  : const NetworkImage("https://placehold.co/156x158.png");
 
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -355,16 +382,73 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                        
-                          // placeholder shelf row for now
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 20),
-                            child: Text(
-                              "No accepted mixtapes yet.",
-                              style: TextStyle(color: Colors.black54, fontSize: 16),
-                            ),
-                          ),
+                          FutureBuilder<List<dynamic>>(
+                            future: _receivedMixtapesFuture,
+                            builder: (context, mixtapeSnapshot) {
+                              if (mixtapeSnapshot.connectionState != ConnectionState.done) {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 20),
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
 
+                              if (mixtapeSnapshot.hasError) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 20),
+                                  child: Text(
+                                    "Error loading mixtapes: ${mixtapeSnapshot.error}",
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                );
+                              }
+
+                              final acceptedMixtapes = mixtapeSnapshot.data ?? [];
+
+                              if (acceptedMixtapes.isEmpty) {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 20),
+                                  child: Text(
+                                    "No accepted mixtapes yet.",
+                                    style: TextStyle(color: Colors.black54, fontSize: 16),
+                                  ),
+                                );
+                              }
+
+                              return SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: acceptedMixtapes.map((mixtape) {
+                                    final title = mixtape['title'] ?? 'Untitled Mixtape';
+
+                                    final senderName =
+                                        mixtape['creatorId'] is Map<String, dynamic>
+                                            ? (mixtape['creatorId']['username'] ??
+                                                mixtape['creatorId']['name'] ??
+                                                'Unknown sender')
+                                            : 'Unknown sender';
+
+                                    final imageUrl =
+                                        mixtape['cover_image_url'] != null &&
+                                                mixtape['cover_image_url'].toString().isNotEmpty
+                                            ? mixtape['cover_image_url']
+                                            : 'https://placehold.co/136x136.png';
+
+                                    final playlistUrl = mixtape['spotify_playlist_url'] ?? '';
+
+                                    return Padding(
+                                      padding: const EdgeInsets.only(right: 16),
+                                      child: _MixtapeShelfCard(
+                                        title: title,
+                                        sender: '@$senderName',
+                                        imageUrl: imageUrl,
+                                        playlistUrl: playlistUrl,
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -384,58 +468,73 @@ class _MixtapeShelfCard extends StatelessWidget {
   final String title;
   final String sender;
   final String imageUrl;
+  final String playlistUrl;
 
   const _MixtapeShelfCard({
     required this.title,
     required this.sender,
     required this.imageUrl,
+    required this.playlistUrl,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 160,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
-        border: Border.all(color: const Color(0xFFD9D9D9)),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              imageUrl,
-              width: 136,
-              height: 136,
-              fit: BoxFit.cover,
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () async {
+        if (playlistUrl.isEmpty) return;
+
+        final uri = Uri.parse(playlistUrl);
+        await launchUrl(
+          uri,
+          mode: LaunchMode.platformDefault,
+          webOnlyWindowName: '_blank',
+        );
+      },
+      child: Container(
+        width: 160,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF9F9F9),
+          border: Border.all(color: const Color(0xFFD9D9D9)),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                imageUrl,
+                width: 136,
+                height: 136,
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 15,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w500,
+            const SizedBox(height: 10),
+            Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 15,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            sender,
-            style: const TextStyle(
-              color: Colors.black54,
-              fontSize: 13,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w400,
+            const SizedBox(height: 4),
+            Text(
+              sender,
+              style: const TextStyle(
+                color: Colors.black54,
+                fontSize: 13,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w400,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
