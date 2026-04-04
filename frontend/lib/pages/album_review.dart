@@ -174,12 +174,15 @@ Future<void> _searchSpotifyAlbums(String query) async {
   final uri = Uri.parse("$_baseUrl/api/album-reviews");
 
   final payload = {
-  "userId": widget.userId,
-  "spotify_album_id": _selectedAlbum!["spotify_album_id"],
-  "rating": _rating.toDouble(),  // ✅ ensures double
-  "review_text": _reviewController.text,
-  "custom_image_url": _selectedAlbum?["imageUrl"]
-};
+    "userId": widget.userId,
+    "spotify_album_id": _selectedAlbum!["spotify_album_id"],
+    "album_name": _selectedAlbum!["name"],
+    "artist_name": _selectedAlbum!["artist"],
+    "spotify_album_image_url": _selectedAlbum!["imageUrl"],
+    "rating": _rating.toDouble(),
+    "review_text": _reviewController.text.trim(),
+    "custom_image_url": _selectedAlbum?["imageUrl"],
+  };
 
   try {
     final response = await http.post(

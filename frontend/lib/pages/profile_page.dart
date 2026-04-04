@@ -18,6 +18,7 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
   late Future<Map<String, dynamic>> _userFuture;
   late Future<List<dynamic>> _receivedMixtapesFuture;
   List<dynamic> concertReviews = [];
+  List<dynamic> albumReviews = [];
 
   @override
   void initState() {
@@ -25,6 +26,7 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
     _userFuture = _fetchUser();
     _receivedMixtapesFuture = _fetchReceivedMixtapes();
     _loadConcertReviews();
+    _loadAlbumReviews();
   }
 
   Future<void> _loadConcertReviews() async {
@@ -36,6 +38,29 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
       });
     } catch (e) {
       print("Error fetching concert reviews: $e");
+    }
+  }
+
+  Future<void> _loadAlbumReviews() async {
+    if (widget.userId == null) return;
+
+    try {
+      final uri = Uri.parse("http://localhost:3000/album-reviews/user/${widget.userId}");
+      final resp = await http.get(uri, headers: {
+        "Content-Type": "application/json",
+      });
+
+      if (resp.statusCode != 200) {
+        throw Exception("Failed to load album reviews: ${resp.statusCode} ${resp.body}");
+      }
+
+      final reviews = jsonDecode(resp.body) as List<dynamic>;
+
+      setState(() {
+        albumReviews = reviews;
+      });
+    } catch (e) {
+      print("Error fetching album reviews: $e");
     }
   }
 
@@ -360,6 +385,89 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
                               );
                             },
                           ),
+
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            child: Text(
+                              "My Album Reviews",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+
+                          albumReviews.isEmpty
+                              ? const Padding(
+                                  padding: EdgeInsets.all(24),
+                                  child: Text("No album reviews yet."),
+                                )
+                              : ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: albumReviews.length,
+                                  itemBuilder: (context, index) {
+                                    final review = albumReviews[index];
+
+                                    final imageUrl =
+                                        (review['custom_image_url'] != null &&
+                                                review['custom_image_url'].toString().isNotEmpty)
+                                            ? review['custom_image_url']
+                                            : (review['spotify_album_image_url'] ?? '');
+
+                                    return Card(
+                                      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            if (imageUrl.toString().isNotEmpty)
+                                              Padding(
+                                                padding: const EdgeInsets.only(right: 12),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  child: Image.network(
+                                                    imageUrl,
+                                                    width: 90,
+                                                    height: 90,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context, error, stackTrace) =>
+                                                        const Icon(Icons.broken_image, size: 40),
+                                                  ),
+                                                ),
+                                              ),
+
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    review['album_name'] ?? '',
+                                                    style: const TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    review['artist_name'] ?? '',
+                                                    style: const TextStyle(color: Colors.grey),
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  Text("Rating: ${review['rating'] ?? ''} / 5"),
+                                                  const SizedBox(height: 8),
+                                                  Text(review['review_text'] ?? ''),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                   ],
                 ),
               ),

@@ -245,7 +245,7 @@ class _AddFriendsPageState extends State<AddFriendsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Add a friend (enter Spotify User ID)"),
+                  const Text("Add a friend (enter exact Spotify ID, username, or email)"),
                   const SizedBox(height: 10),
 
                   //the text field where the user enters another user's spotifyID

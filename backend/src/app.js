@@ -10,6 +10,7 @@ import mixtapeRoutes from "./routes/mixtapes.js";
 import albumReviewRoutes from "./routes/albumreviews.js";
 import concertReviewRoutes from "./routes/concertreviews.js";
 import countdownRoutes from "./routes/countdowns.js";
+import activityFeedRoutes from "./routes/activityfeed.js";
 
 
 const app = express();
@@ -33,5 +34,6 @@ app.use("/album-reviews", albumReviewRoutes);
 app.use("/concert-reviews", concertReviewRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use("/countdowns", countdownRoutes);
+app.use("/activity-feed", activityFeedRoutes);
 
 export default app;

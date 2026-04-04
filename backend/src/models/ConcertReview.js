@@ -28,7 +28,7 @@ const concertReviewSchema = new mongoose.Schema({
   },
   rating: {
     // same Decimal128 fix as AlbumReview: ensures bsonType "double" in MongoDB
-    type: Number,
+    type: mongoose.Schema.Types.Double,
     required: true,
     min: 0,
     max: 5,

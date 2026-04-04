@@ -297,43 +297,62 @@ class _AddConcertReviewState extends State<AddConcertReview> {
   Future<void> pickImages() async {
     final ImagePicker picker = ImagePicker();
     final List<XFile>? images = await picker.pickMultiImage(limit: 5);
-    final List<Uint8List> newSelectedImages = [];
-    
     if (images == null || images.isEmpty) return;
     for (final xfile in images) {
-      if (selectedImages.length >= 5) break; 
+      if (selectedImages.length >= 5) break;
       final bytes = await xfile.readAsBytes();
-      newSelectedImages.add(bytes);
       setState(() {
-        selectedImages.addAll(newSelectedImages);
+        selectedImages.add(bytes);
       });
     }
   }
 
   Future<void> submitConcertReview() async {
-    if (artistController.text.trim().isEmpty || albumController.text.trim().isEmpty || reviewController.text.trim().isEmpty) {
+    if (artistController.text.trim().isEmpty ||
+        albumController.text.trim().isEmpty ||
+        dateController.text.trim().isEmpty ||
+        locationController.text.trim().isEmpty ||
+        reviewController.text.trim().isEmpty ||
+        rating <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all required fields")),
+        const SnackBar(
+          content: Text("Please fill in artist, title, date, location, review, and rating"),
+        ),
       );
       return;
-    } 
+    }
+
+    final parsedDate = DateTime.tryParse(dateController.text.trim());
+    if (parsedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please enter a valid date in YYYY-MM-DD format"),
+        ),
+      );
+      return;
+    }
 
     final url = Uri.parse("http://localhost:3000/concert-reviews");
-    final request = http.MultipartRequest('POST', url); // replace with your backend URL
+    final request = http.MultipartRequest('POST', url);
 
     request.fields.addAll({
       "userId": widget.userId,
       "artist_name": artistController.text.trim(),
       "title": albumController.text.trim(),
-      "date": dateController.text.trim(),
+      "date": parsedDate.toIso8601String(),
       "location": locationController.text.trim(),
-      "rating": rating.toString(),
+      "rating": rating.toStringAsFixed(1),
       "review_text": reviewController.text.trim(),
     });
 
-    // Attach images
-    for (int i=0; i<selectedImages.length; i++) {
-      request.files.add(http.MultipartFile.fromBytes('images', selectedImages[i], filename: 'image_$i.jpg',),);
+    for (int i = 0; i < selectedImages.length; i++) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'images',
+          selectedImages[i],
+          filename: 'image_$i.jpg',
+        ),
+      );
     }
 
     try {
@@ -344,33 +363,33 @@ class _AddConcertReviewState extends State<AddConcertReview> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Review submitted successfully!")),
         );
-        // Optionally, clear the form or navigate away
-        // Optional: Clear form after submission
+
         artistController.clear();
         albumController.clear();
         locationController.clear();
         dateController.clear();
         reviewController.clear();
+
         setState(() {
           rating = 0;
           selectedImages.clear();
         });
 
-        if (!mounted) return; // Check if widget is still in the tree before navigating
+        if (!mounted) return;
         Navigator.pushReplacementNamed(
           context,
           '/profile?userId=${widget.userId}',
-          ); // Go back to previous screen after submission
+        );
       } else {
-        print("Status code: ${response.statusCode}, Body: ${response.body}"); // for debugging
+        print("Status code: ${response.statusCode}, Body: ${response.body}");
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to submit review. Please try again.")),
+          SnackBar(content: Text("Failed: ${response.body}")),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("An error occurred while submitting the review.")),
+        SnackBar(content: Text("An error occurred: $e")),
       );
     }
   }

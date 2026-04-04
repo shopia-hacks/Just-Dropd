@@ -1,4 +1,3 @@
-// models/AlbumReview.js
 import mongoose from "mongoose";
 
 const albumReviewSchema = new mongoose.Schema({
@@ -11,8 +10,20 @@ const albumReviewSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  album_name: {
+    type: String,
+    default: ""
+  },
+  artist_name: {
+    type: String,
+    default: ""
+  },
+  spotify_album_image_url: {
+    type: String,
+    default: ""
+  },
   rating: {
-    type: Number, // change from Decimal128 → Number
+    type: Number,
     required: true,
     min: 0,
     max: 5
@@ -21,20 +32,18 @@ const albumReviewSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
-  // optional custom cover image; if null, the Spotify album art is used
   custom_image_url: {
-    type: String
+    type: String,
+    default: ""
   }
 }, {
   timestamps: true,
-  // serialize Decimal128 → plain JS number in JSON responses to Flutter
   toJSON: {
     transform(doc, ret) {
-      if (ret.rating) ret.rating = parseFloat(ret.rating.toString());
+      if (ret.rating != null) ret.rating = parseFloat(ret.rating.toString());
       return ret;
     }
   }
 });
 
 export default mongoose.model("AlbumReview", albumReviewSchema);
-

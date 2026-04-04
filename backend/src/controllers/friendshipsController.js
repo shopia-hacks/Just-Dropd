@@ -17,7 +17,8 @@ export async function sendRequest(req, res) {
     const friendUser = await User.findOne({
       $or: [
         { spotify_user_id: friendUsername },
-        { username: friendUsername }
+        { username: friendUsername },
+        { email: search.toLowerCase() }
       ]
     });
 
