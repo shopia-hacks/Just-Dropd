@@ -318,7 +318,6 @@ Future<void> _searchSpotifyAlbums(String query) async {
 
 
                    decoration: BoxDecoration(
-                     border: Border.all(color: Colors.grey.shade300),
                      borderRadius: BorderRadius.circular(12),
                    ),
 
@@ -375,7 +374,6 @@ Future<void> _searchSpotifyAlbums(String query) async {
 
 
                    decoration: BoxDecoration(
-                     border: Border.all(color: Colors.grey.shade300),
                      borderRadius: BorderRadius.circular(12),
                    ),
 
@@ -424,7 +422,6 @@ Future<void> _searchSpotifyAlbums(String query) async {
 
                              Text(
                                _selectedAlbum!["artist"],
-                               style: const TextStyle(color: Colors.grey),
                              ),
                            ],
                          ),
@@ -483,7 +480,6 @@ Future<void> _searchSpotifyAlbums(String query) async {
 
 
                    style: ElevatedButton.styleFrom(
-                     backgroundColor: const Color(0xFFFF8AD2),
                      padding: const EdgeInsets.symmetric(vertical: 14),
                    ),
 
@@ -493,7 +489,6 @@ Future<void> _searchSpotifyAlbums(String query) async {
 
                    child: const Text(
                      "Submit Review",
-                     style: TextStyle(color: Colors.white),
                    ),
                  ),
                ),

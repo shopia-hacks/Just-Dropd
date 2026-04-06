@@ -13,16 +13,20 @@ export async function createMixtape(req, res) {
       receiverId,
       message,
       type,
-      tracks,
-      cover_image_url,
       visibility
     } = req.body;
+
+    const tracks = JSON.parse(req.body.tracks || "[]");
+
+    const coverImagePath = req.file
+      ? req.file.path.replace(/\\/g, "/")
+      : "";
 
     if (!title || !creatorId || !receiverId) {
       return res.status(400).send("title, creatorId, and receiverId are required");
     }
 
-    if (!Array.isArray(tracks) || tracks.length == 0) {
+    if (!Array.isArray(tracks) || tracks.length === 0) {
       return res.status(400).send("At least one track is required");
     }
 
@@ -30,7 +34,6 @@ export async function createMixtape(req, res) {
       return res.status(400).send("Cannot send a mixtape to yourself");
     }
 
-    // optional but recommended: ensure they are accepted friends
     const friendship = await Friendship.findOne({
       status: "accepted",
       $or: [
@@ -50,7 +53,7 @@ export async function createMixtape(req, res) {
       message: message || "",
       type: (type || "cd").toLowerCase(),
       visibility: visibility || "public",
-      cover_image_url: cover_image_url || "",
+      cover_image_url: coverImagePath,
       status: "pending",
       tracks
     });
@@ -62,6 +65,7 @@ export async function createMixtape(req, res) {
 
     res.status(201).json(populated);
   } catch (err) {
+    console.error("Mixtape save error:", err);
     res.status(400).send(err.message);
   }
 }

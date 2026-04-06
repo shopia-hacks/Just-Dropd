@@ -274,24 +274,33 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
 
     try {
       final uri = Uri.parse("$_baseUrl/mixtapes");
+      final request = http.MultipartRequest("POST", uri);
 
-      final resp = await http.post(
-        uri,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "title": title,
-          "creatorId": widget.userId,
-          "receiverId": receiverId,
-          "message": message,
-          "type": (_mixtapeType ?? "CD").toLowerCase(),
-          "visibility": "public",
-          "cover_image_url": "", // later replace with uploaded image url
-          "tracks": tracks,
-        }),
-      );
+      request.fields.addAll({
+        "title": title,
+        "creatorId": widget.userId!,
+        "receiverId": receiverId,
+        "message": message,
+        "type": (_mixtapeType ?? "CD").toLowerCase(),
+        "visibility": "public",
+        "tracks": jsonEncode(tracks),
+      });
 
-      if (resp.statusCode != 201) {
-        throw Exception("Create mixtape failed (${resp.statusCode}): ${resp.body}");
+      if (_coverBytes != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            "coverImage",
+            _coverBytes!,
+            filename: "mixtape_cover.jpg",
+          ),
+        );
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode != 201) {
+        throw Exception("Create mixtape failed (${response.statusCode}): ${response.body}");
       }
 
       setState(() {
@@ -372,7 +381,6 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
           const Text(
             "Mixtape Title",
             style: TextStyle(
-              color: Color(0xFF1E1E1E),
               fontSize: 16,
               fontFamily: 'Inter',
               fontWeight: FontWeight.w400,
@@ -398,7 +406,6 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
           const Text(
             "Receiver Username",
             style: TextStyle(
-              color: Color(0xFF1E1E1E),
               fontSize: 16,
               fontFamily: 'Inter',
               fontWeight: FontWeight.w400,
@@ -470,7 +477,6 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
           const Text(
             "Mixtape Message",
             style: TextStyle(
-              color: Color(0xFF1E1E1E),
               fontSize: 16,
               fontFamily: 'Inter',
               fontWeight: FontWeight.w400,
@@ -503,7 +509,6 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
                     const Text(
                       "Cover Image",
                       style: TextStyle(
-                        color: Colors.black,
                         fontSize: 16,
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w400,
@@ -570,7 +575,6 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
                     const Text(
                       "Type",
                       style: TextStyle(
-                        color: Colors.black,
                         fontSize: 16,
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w400,
@@ -582,11 +586,9 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
                       value: _mixtapeType,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: const Color(0xFFFF8BD2),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFFFF8BD2)),
                         ),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       ),
@@ -594,9 +596,7 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
                       iconEnabledColor: Colors.white,
                       hint: const Text(
                         "Select an Item",
-                        style: TextStyle(color: Colors.white, fontSize: 12, fontFamily: 'Inter'),
                       ),
-                      style: const TextStyle(color: Colors.black),
                       items: const [
                         DropdownMenuItem(value: "CD", child: Text("CD")),
                         DropdownMenuItem(value: "Cassette", child: Text("Cassette")),
@@ -615,7 +615,6 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
           const Text(
             "Add Songs",
             style: TextStyle(
-              color: Colors.black,
               fontSize: 16,
               fontFamily: 'Inter',
               fontWeight: FontWeight.w400,
@@ -730,7 +729,6 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF8AD2),
                 shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
@@ -743,7 +741,6 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
                   )
                   : const Text(
                       "Create Mixtape",
-                      style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: 'Roboto'),
                     ),
             ),
           ),
@@ -766,7 +763,6 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
           const Text(
             "Songs Added:",
             style: TextStyle(
-              color: Colors.black,
               fontSize: 16,
               fontFamily: 'Inter',
               fontWeight: FontWeight.w400,
@@ -784,7 +780,6 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
                 child: Text(
                   s["label"] ?? (s["spotify_track_id"] ?? ""),
                   style: const TextStyle(
-                    color: Colors.black,
                     fontSize: 16,
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w400,
