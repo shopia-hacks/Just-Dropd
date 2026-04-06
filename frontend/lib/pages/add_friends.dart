@@ -225,9 +225,13 @@ class _AddFriendsPageState extends State<AddFriendsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //adding in the custom nav bar jessica made
-      bottomNavigationBar: CustomNavBar(userId: widget.userId),
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text("Add Friends"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(18),
 
