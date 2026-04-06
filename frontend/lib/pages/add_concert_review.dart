@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:just_dropd/shared/nav_bar.dart';
 import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 
@@ -26,16 +24,17 @@ class _AddConcertReviewState extends State<AddConcertReview> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: CustomNavBar(userId: widget.userId,), // nav bar
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text("Add a Concert Review"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
-              const SizedBox(height: 20),
-              const Text("Add a Concert Review",
-                style: TextStyle(fontSize: 24),
-              ),
               const SizedBox(height: 20),
               Container(
                 //width: 282,
