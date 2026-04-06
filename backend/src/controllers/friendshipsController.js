@@ -18,7 +18,7 @@ export async function sendRequest(req, res) {
       $or: [
         { spotify_user_id: friendUsername },
         { username: friendUsername },
-        { email: search.toLowerCase() }
+        { email: friendUsername.toLowerCase() }
       ]
     });
 

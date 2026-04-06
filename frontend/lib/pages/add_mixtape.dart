@@ -318,7 +318,12 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: CustomNavBar(userId: widget.userId),
+      appBar: AppBar(
+        title: const Text("Add a Mix"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 900;
