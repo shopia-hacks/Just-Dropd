@@ -225,6 +225,12 @@ Future<void> _searchSpotifyAlbums(String query) async {
    return Scaffold(
      backgroundColor: Colors.white,
 
+     appBar: AppBar(
+        title: const Text("Add a Countdown"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
 
      body: Center(
        child: SingleChildScrollView(
