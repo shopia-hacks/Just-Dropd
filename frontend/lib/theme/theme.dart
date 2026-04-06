@@ -332,6 +332,10 @@ class AppLayout {
   static const double radiusMd      = 18;
   static const double radiusSm      = 12;
 
+  // New maximum width for feed images
+  //static const double feedImageWidthRatio = 0.8;
+  static const double feedImageMaxHeight = 350.0;
+
   // Countdown card
   static const double coverArtSize      = 68;
   static const double coverArtRadius    = 14;
