@@ -94,7 +94,6 @@ class _ActivityFeedState extends State<ActivityFeed> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey,
               ),
             ),
             const SizedBox(height: 6),
@@ -161,7 +160,6 @@ class _ActivityFeedState extends State<ActivityFeed> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey,
               ),
             ),
             const SizedBox(height: 6),
@@ -245,7 +243,6 @@ class _ActivityFeedState extends State<ActivityFeed> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey,
               ),
             ),
             const SizedBox(height: 6),

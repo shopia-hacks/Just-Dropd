@@ -278,11 +278,13 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
                                                 'Unknown sender')
                                             : 'Unknown sender';
 
-                                    final imageUrl =
-                                        mixtape['cover_image_url'] != null &&
-                                                mixtape['cover_image_url'].toString().isNotEmpty
-                                            ? mixtape['cover_image_url']
-                                            : 'https://placehold.co/136x136.png';
+                                    final rawCoverPath = (mixtape['cover_image_url'] ?? '').toString();
+
+                                    final imageUrl = rawCoverPath.isNotEmpty
+                                        ? (rawCoverPath.startsWith('http')
+                                            ? rawCoverPath
+                                            : 'http://localhost:3000/$rawCoverPath')
+                                        : 'https://placehold.co/136x136.png';
 
                                     final playlistUrl = mixtape['spotify_playlist_url'] ?? '';
 
@@ -525,6 +527,14 @@ class _MixtapeShelfCard extends StatelessWidget {
                 width: 136,
                 height: 136,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 136,
+                    height: 136,
+                    color: const Color(0xFFEFEFEF),
+                    child: const Icon(Icons.album, size: 40, color: Colors.black45),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 10),
