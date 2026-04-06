@@ -104,13 +104,13 @@ class _AddConcertReviewState extends State<AddConcertReview> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w400,
-          ),
+          label
+          // style: const TextStyle(
+          //   color: Colors.black,
+          //   fontSize: 16,
+          //   fontFamily: 'Inter',
+          //   fontWeight: FontWeight.w400,
+          // ),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -119,15 +119,15 @@ class _AddConcertReviewState extends State<AddConcertReview> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFD8D8D8), width: 1),
+              // borderSide: const BorderSide(color: Color(0xFFD8D8D8), width: 1),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFD8D8D8), width: 1),
+              // borderSide: const BorderSide(color: Color(0xFFD8D8D8), width: 1),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.blue, width: 1.5),
+              // borderSide: const BorderSide(color: Colors.blue, width: 1.5),
             ),
           ),
         ),
@@ -140,13 +140,13 @@ class _AddConcertReviewState extends State<AddConcertReview> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "Rating:",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w400,
-          ),
+          "Rating:"
+          // style: TextStyle(
+          //   color: Colors.black,
+          //   fontSize: 16,
+          //   fontFamily: 'Inter',
+          //   fontWeight: FontWeight.w400,
+          // ),
         ),
         const SizedBox(height: 8),
         Row(
@@ -189,13 +189,13 @@ class _AddConcertReviewState extends State<AddConcertReview> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w400,
-          ),
+          label
+          // style: TextStyle(
+          //   color: Colors.black,
+          //   fontSize: 16,
+          //   fontFamily: 'Inter',
+          //   fontWeight: FontWeight.w400,
+          // ),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -236,13 +236,13 @@ class _AddConcertReviewState extends State<AddConcertReview> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "Upload Images (max 5):",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w400,
-          ),
+          "Upload Images (max 5):"
+          // style: TextStyle(
+          //   color: Colors.black,
+          //   fontSize: 16,
+          //   fontFamily: 'Inter',
+          //   fontWeight: FontWeight.w400,
+          // ),
         ),
         const SizedBox(height: 8),
         ElevatedButton(
