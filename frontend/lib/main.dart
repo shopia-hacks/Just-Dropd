@@ -4,11 +4,14 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../pages/profile_page.dart';
 
+// theme
+import 'theme/theme.dart';
+
 void main() {
   usePathUrlStrategy();
-
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
+    theme: AppTheme.light,
     onGenerateRoute: (settings) {
       final uri = Uri.parse(settings.name ?? '/');
 
@@ -58,19 +61,6 @@ class HomeRoute extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             ElevatedButton(
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                  const Color(0xFFFF8AD2),
-                ),
-                foregroundColor: WidgetStateProperty.all(Colors.white),
-                padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                ),
-              ),
-              child: const Text(
-                'Login with Spotify',
-                style: TextStyle(fontSize: 16),
-              ),
               onPressed: () async {
                 await launchUrl(
                   spotifyLoginUrl,
@@ -78,6 +68,7 @@ class HomeRoute extends StatelessWidget {
                   webOnlyWindowName: '_self',
                 );
               },
+              child: const Text('Login with Spotify'),
             ),
           ],
         ),
