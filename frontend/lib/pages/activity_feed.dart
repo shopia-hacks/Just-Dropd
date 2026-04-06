@@ -280,31 +280,35 @@ class _ActivityFeedState extends State<ActivityFeed> {
 
   Widget _buildFeedImage(String imageUrl) {
     return Center(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppLayout.radiusSm),
-        child: Image.network(
-          imageUrl,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              width: double.infinity,
-              height: 150,
-              color: AppTheme.white,
-              child: const Center(
-                child: Icon(Icons.broken_image, size: 36, color: Colors.grey),
-              ),
-            );
-          },
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              width: double.infinity,
-              height: 150,
-              color: AppTheme.white,
-              child: const Center(child: CircularProgressIndicator()),
-            );
-          },
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 400,   // limits how wide the image can get
+          maxHeight: 400,  // limits how tall it can get
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppLayout.radiusSm),
+          child: AspectRatio(
+            aspectRatio: 1, // keeps it square; remove this if you do not want square
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: AppTheme.white,
+                  child: const Center(
+                    child: Icon(Icons.broken_image, size: 36, color: Colors.grey),
+                  ),
+                );
+              },
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  color: AppTheme.white,
+                  child: const Center(child: CircularProgressIndicator()),
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
