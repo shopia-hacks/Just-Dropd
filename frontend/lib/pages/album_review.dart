@@ -226,7 +226,7 @@ Future<void> _searchSpotifyAlbums(String query) async {
      backgroundColor: Colors.white,
 
      appBar: AppBar(
-        title: const Text("Add a Countdown"),
+        title: const Text("Add an Album Review"),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
