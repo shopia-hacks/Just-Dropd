@@ -17,7 +17,7 @@ class CustomNavBar extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: 92,
-      padding: const EdgeInsets.symmetric(horizontal: 300),
+      padding: const EdgeInsets.symmetric(horizontal: 0),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
@@ -28,7 +28,7 @@ class CustomNavBar extends StatelessWidget {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           IconButton(
             onPressed: () {
