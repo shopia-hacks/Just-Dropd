@@ -62,29 +62,27 @@ class _CountdownClockState extends State<CountdownClock> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.black, width: 1.5),
+        border: Border.all(color: Colors.black12, width: 1.2),
       ),
-      child: isReleased ? _buildReleasedState() : _buildTimerState(),
+      child: isReleased ? _buildReleasedState(context) : _buildTimerState(context),
     );
   }
 
   // ── released ───────────────────────────────────────────────────────────────
-  Widget _buildReleasedState() {
-    return const Text(
+  Widget _buildReleasedState(BuildContext context) {
+    return Text(
       "OUT NOW! 🎶",
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 22,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 2,
-      ),
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontSize: 22,
+          letterSpacing: 2,
+        ),
     );
   }
 
   // ── live timer ─────────────────────────────────────────────────────────────
-  Widget _buildTimerState() {
+  Widget _buildTimerState(BuildContext context) {
     final days    = _remaining.inDays;
     final hours   = _remaining.inHours.remainder(24);
     final minutes = _remaining.inMinutes.remainder(60);
@@ -141,8 +139,7 @@ class _DigitBlock extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.black54,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
             fontSize: 10,
             letterSpacing: 1.5,
             fontWeight: FontWeight.w500,
@@ -159,12 +156,12 @@ class _Colon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.only(bottom: 18, left: 3, right: 3),
       child: Text(
         ":",
         style: TextStyle(
-          color: Colors.black,
+          color: Theme.of(context).colorScheme.onSurface,
           fontSize: 24,
           fontWeight: FontWeight.bold,
         ),

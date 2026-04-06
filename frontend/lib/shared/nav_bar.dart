@@ -18,10 +18,10 @@ class CustomNavBar extends StatelessWidget {
       width: double.infinity,
       height: 92,
       padding: const EdgeInsets.symmetric(horizontal: 300),
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        border: Border(
+          top: BorderSide(
             width: 1,
             color: Colors.black.withValues(alpha: 0.10),
           ),
@@ -57,10 +57,7 @@ class CustomNavBar extends StatelessWidget {
           IconButton(
             onPressed: () {
               print("Add tapped"); // DEBUGGING ONLY
-              showModalBottomSheet( context: context, backgroundColor: Colors.white, 
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
+              showModalBottomSheet( context: context,
                 builder: (context) {
                   return SafeArea(
                     child: Padding(
@@ -174,7 +171,7 @@ class _ActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(title),
+      title: Text(title, style: Theme.of(context).textTheme.bodyLarge,),
       onTap: onTap,
     );
   }

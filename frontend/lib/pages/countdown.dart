@@ -156,7 +156,7 @@ class _CountdownPageState extends State<CountdownPage> {
         _activeTab == "Friends" ? _fetchFriendsCountdowns : _fetchMyCountdowns;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       bottomNavigationBar: CustomNavBar(userId: widget.userId),
       body: SafeArea(
         child: Column(
@@ -171,12 +171,9 @@ class _CountdownPageState extends State<CountdownPage> {
                 children: [
 
                   // page title
-                  const Text(
+                  Text(
                     "Countdowns",
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 26)
                   ),
 
                   const SizedBox(width: 12),
@@ -191,10 +188,10 @@ class _CountdownPageState extends State<CountdownPage> {
                         children: [
                           Text(
                             _activeTab,
-                            style: const TextStyle(
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontSize: 15,
-                              fontWeight: FontWeight.w500,
                               color: Colors.black54,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                           const SizedBox(width: 2),
@@ -212,7 +209,10 @@ class _CountdownPageState extends State<CountdownPage> {
 
                   // refresh button stays top right
                   IconButton(
-                    icon: const Icon(Icons.refresh, color: Colors.black54),
+                    icon: Icon(
+                      Icons.refresh,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
+                    ),
                     onPressed: () {
                       _fetchFriendsCountdowns();
                       _fetchMyCountdowns();
@@ -253,7 +253,7 @@ class _CountdownPageState extends State<CountdownPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(error, style: const TextStyle(color: Colors.red)),
+            Text(error, style: TextStyle(color: Theme.of(context).colorScheme.error),),
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: onRefresh,
@@ -264,15 +264,15 @@ class _CountdownPageState extends State<CountdownPage> {
       );
     }
     if (countdowns.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text("No countdowns yet.",
-                style: TextStyle(fontSize: 16, color: Colors.grey)),
-            SizedBox(height: 6),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),),
+            const SizedBox(height: 6),
             Text("Tap + to add one!",
-                style: TextStyle(fontSize: 13, color: Colors.grey)),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),)
           ],
         ),
       );
@@ -328,22 +328,15 @@ class _CountdownCard extends StatelessWidget {
       }
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isMain ? const Color(0xFFFF3B30) : Colors.grey.shade200,
-          width: isMain ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+    return Card(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      side: BorderSide(
+        color: isMain ? const Color(0xFFFF3B30) : Colors.black12,
+        width: isMain ? 2 : 1,
       ),
+    ),
+    child: Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,9 +384,7 @@ class _CountdownCard extends StatelessWidget {
                     ],
                     Text(
                       albumTitle ?? "Untitled Project",
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 15,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
@@ -401,16 +392,17 @@ class _CountdownCard extends StatelessWidget {
                     ),
                     Text(
                       artistName,
-                      style: const TextStyle(
-                          color: Colors.black54, fontSize: 13),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.black54,
+                        fontSize: 13,
+                      ),
                     ),
                     if (showUsername && username != null) ...[
                       const SizedBox(height: 4),
                       Text(
                         "$username is waiting for this",
-                        style: const TextStyle(
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.black38,
-                          fontSize: 12,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -448,7 +440,8 @@ class _CountdownCard extends StatelessWidget {
           ],
         ],
       ),
-    );
+    ),
+  );
   }
 
   Widget _placeholder() {
