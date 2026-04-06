@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_dropd/shared/nav_bar.dart';
+import 'package:just_dropd/theme/theme.dart'; // Ensure this points to your theme file
 
 class ActivityFeed extends StatefulWidget {
   final String? userId;
@@ -77,65 +78,88 @@ class _ActivityFeedState extends State<ActivityFeed> {
     }
   }
 
-  Widget _buildPendingMixtapeCard(Map<String, dynamic> itemData) {
-    final creator = itemData["creatorId"] as Map<String, dynamic>?;
-    final senderName =
-        (creator?["name"] ?? creator?["username"] ?? "Friend").toString();
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+  // ─── Shared Bottom Description ──────────────────────────────────────
+  Widget _buildDescriptionText(String text, int index) {
+    return Align(
+      alignment: Alignment.centerRight,
       child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "New Mixtape Request",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+        padding: const EdgeInsets.only(top: AppLayout.smallGap),
+        child: Text(
+          text,
+          textAlign: TextAlign.right,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppTheme.activityColorAt(index),
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              itemData["title"]?.toString() ?? "Untitled Mixtape",
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text("From: $senderName"),
-            const SizedBox(height: 6),
-            if ((itemData["message"] ?? "").toString().isNotEmpty)
-              Text(itemData["message"].toString()),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                TextButton(
-                  onPressed: () => _respondToMixtape(
-                    itemData["_id"].toString(),
-                    "rejected",
-                  ),
-                  child: const Text("Decline"),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () => _respondToMixtape(
-                    itemData["_id"].toString(),
-                    "accepted",
-                  ),
-                  child: const Text("Accept"),
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );
   }
 
-  Widget _buildConcertReviewCard(Map<String, dynamic> itemData) {
+  // ─── Feed Item Builders ───────────────────────────────────────────
+  Widget _buildPendingMixtapeCard(Map<String, dynamic> itemData, int index) {
+    final creator = itemData["creatorId"] as Map<String, dynamic>?;
+    final senderName =
+        (creator?["name"] ?? creator?["username"] ?? "Friend").toString();
+    final description = "$senderName sent you a mixtape request.";
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppLayout.sectionGap),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppLayout.cardPadding),
+            decoration: BoxDecoration(
+              color: AppTheme.cream,
+              borderRadius: BorderRadius.circular(AppLayout.radiusLg),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  itemData["title"]?.toString() ?? "Untitled Mixtape",
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                if ((itemData["message"] ?? "").toString().isNotEmpty) ...[
+                  const SizedBox(height: AppLayout.smallGap),
+                  Text(
+                    itemData["message"].toString(),
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ],
+                const SizedBox(height: AppLayout.itemGap),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => _respondToMixtape(
+                        itemData["_id"].toString(),
+                        "rejected",
+                      ),
+                      child: const Text("Decline"),
+                    ),
+                    const SizedBox(width: AppLayout.smallGap),
+                    ElevatedButton(
+                      onPressed: () => _respondToMixtape(
+                        itemData["_id"].toString(),
+                        "accepted",
+                      ),
+                      child: const Text("Accept"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          _buildDescriptionText(description, index),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConcertReviewCard(Map<String, dynamic> itemData, int index) {
     final user = itemData["userId"] as Map<String, dynamic>?;
     final displayName =
         (user?["name"] ?? user?["username"] ?? "User").toString();
@@ -145,77 +169,56 @@ class _ActivityFeedState extends State<ActivityFeed> {
     final location = itemData["location"]?.toString() ?? "";
     final rating = itemData["rating"]?.toString() ?? "";
     final reviewText = itemData["review_text"]?.toString() ?? "";
-
     final imageUrls = itemData["image_urls"] as List<dynamic>? ?? [];
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Concert Review",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+    final description = "$displayName reviewed $artistName.";
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppLayout.sectionGap),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppLayout.cardPadding),
+            decoration: BoxDecoration(
+              color: AppTheme.cream,
+              borderRadius: BorderRadius.circular(AppLayout.radiusLg),
             ),
-            const SizedBox(height: 6),
-            Text(
-              "$displayName reviewed $artistName",
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(reviewTitle, style: Theme.of(context).textTheme.titleMedium),
+                if (location.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(location, style: Theme.of(context).textTheme.labelLarge),
+                ],
+                if (rating.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text("Rating: $rating / 5", style: Theme.of(context).textTheme.bodyMedium),
+                ],
+                if (reviewText.isNotEmpty) ...[
+                  const SizedBox(height: AppLayout.smallGap),
+                  Text(
+                    reviewText.length > 140
+                        ? "${reviewText.substring(0, 140)}..."
+                        : reviewText,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ],
+                if (imageUrls.isNotEmpty) ...[
+                  const SizedBox(height: AppLayout.itemGap),
+                  _buildFeedImage("$_baseUrl/${imageUrls.first}"),
+                ],
+              ],
             ),
-            const SizedBox(height: 4),
-            Text(reviewTitle),
-            if (location.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(location),
-            ],
-            if (rating.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text("Rating: $rating / 5"),
-            ],
-            if (reviewText.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                reviewText.length > 140
-                    ? "${reviewText.substring(0, 140)}..."
-                    : reviewText,
-              ),
-            ],
-            if (imageUrls.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              _buildFeedImage("$_baseUrl/${imageUrls.first}"),
-            ],
-          ],
-        ),
+          ),
+          _buildDescriptionText(description, index),
+        ],
       ),
     );
   }
 
-  Widget _buildFeedCard(Map<String, dynamic> feedItem) {
-    final type = feedItem["type"];
-    final data = feedItem["data"] as Map<String, dynamic>;
-
-    switch (type) {
-      case "pending_mixtape":
-        return _buildPendingMixtapeCard(data);
-      case "concert_review":
-        return _buildConcertReviewCard(data);
-      case "album_review":
-        return _buildAlbumReviewCard(data);
-      default:
-        return const SizedBox.shrink();
-    }
-
-  }
-
-  Widget _buildAlbumReviewCard(Map<String, dynamic> itemData) {
+  Widget _buildAlbumReviewCard(Map<String, dynamic> itemData, int index) {
     final user = itemData["userId"] as Map<String, dynamic>?;
     final displayName =
         (user?["name"] ?? user?["username"] ?? "User").toString();
@@ -231,119 +234,149 @@ class _ActivityFeedState extends State<ActivityFeed> {
     final imageToShow =
         customImageUrl.isNotEmpty ? customImageUrl : spotifyAlbumImageUrl;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Album Review",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+    final description = "$displayName reviewed ${albumName.isNotEmpty ? albumName : "an album"}.";
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppLayout.sectionGap),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppLayout.cardPadding),
+            decoration: BoxDecoration(
+              color: AppTheme.cream,
+              borderRadius: BorderRadius.circular(AppLayout.radiusLg),
             ),
-            const SizedBox(height: 6),
-            Text(
-              "$displayName reviewed ${albumName.isNotEmpty ? albumName : "an album"}",
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (artistName.isNotEmpty)
+                  Text(artistName, style: Theme.of(context).textTheme.titleMedium),
+                if (rating.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text("Rating: $rating / 5", style: Theme.of(context).textTheme.labelLarge),
+                ],
+                if (reviewText.isNotEmpty) ...[
+                  const SizedBox(height: AppLayout.smallGap),
+                  Text(
+                    reviewText.length > 140
+                        ? "${reviewText.substring(0, 140)}..."
+                        : reviewText,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ],
+                if (imageToShow.isNotEmpty) ...[
+                  const SizedBox(height: AppLayout.itemGap),
+                  _buildFeedImage(imageToShow),
+                ],
+              ],
             ),
-            if (artistName.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(artistName),
-            ],
-            if (rating.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text("Rating: $rating / 5"),
-            ],
-            if (reviewText.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                reviewText.length > 140
-                    ? "${reviewText.substring(0, 140)}..."
-                    : reviewText,
-              ),
-            ],
-            if (imageToShow.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              _buildFeedImage(imageToShow),
-            ],
-          ],
-        ),
+          ),
+          _buildDescriptionText(description, index),
+        ],
       ),
     );
   }
 
   Widget _buildFeedImage(String imageUrl) {
     return Center(
-      child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 260,
-          maxHeight: 180,
-        ),
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF4F4F4),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.network(
-            imageUrl,
-            fit: BoxFit.contain,
-            alignment: Alignment.center,
-            errorBuilder: (context, error, stackTrace) {
-              return const SizedBox(
-                width: 120,
-                height: 120,
-                child: Center(
-                  child: Icon(Icons.broken_image, size: 36, color: Colors.grey),
-                ),
-              );
-            },
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return const SizedBox(
-                width: 120,
-                height: 120,
-                child: Center(child: CircularProgressIndicator()),
-              );
-            },
-          ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppLayout.radiusSm),
+        child: Image.network(
+          imageUrl,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: double.infinity,
+              height: 150,
+              color: AppTheme.white,
+              child: const Center(
+                child: Icon(Icons.broken_image, size: 36, color: Colors.grey),
+              ),
+            );
+          },
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              width: double.infinity,
+              height: 150,
+              color: AppTheme.white,
+              child: const Center(child: CircularProgressIndicator()),
+            );
+          },
         ),
       ),
     );
+  }
+
+  Widget _buildFeedCard(Map<String, dynamic> feedItem, int index) {
+    final type = feedItem["type"];
+    final data = feedItem["data"] as Map<String, dynamic>;
+
+    switch (type) {
+      case "pending_mixtape":
+        return _buildPendingMixtapeCard(data, index);
+      case "concert_review":
+        return _buildConcertReviewCard(data, index);
+      case "album_review":
+        return _buildAlbumReviewCard(data, index);
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: CustomNavBar(userId: widget.userId),
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(18),
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _error != null
-                ? Center(child: Text(_error!))
-                : _feedItems.isEmpty
-                    ? const Center(child: Text("No activity yet."))
-                    : RefreshIndicator(
-                        onRefresh: _fetchFeed,
-                        child: ListView.builder(
-                          itemCount: _feedItems.length,
-                          itemBuilder: (context, index) {
-                            final item =
-                                _feedItems[index] as Map<String, dynamic>;
-                            return _buildFeedCard(item);
-                          },
-                        ),
-                      ),
+      backgroundColor: AppTheme.white,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ─── Header matching Countdown Page ───────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppLayout.pagePadding,
+                20,
+                AppLayout.pagePadding,
+                AppLayout.itemGap,
+              ),
+              child: Text(
+                'Activity',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontSize: 28,
+                      color: AppTheme.red,
+                    ),
+              ),
+            ),
+            // ─── Feed List ──────────────────────────────────────────────
+            Expanded(
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _error != null
+                      ? Center(child: Text(_error!))
+                      : _feedItems.isEmpty
+                          ? const Center(child: Text("No activity yet."))
+                          : RefreshIndicator(
+                              onRefresh: _fetchFeed,
+                              child: ListView.builder(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppLayout.pagePadding,
+                                ),
+                                itemCount: _feedItems.length,
+                                itemBuilder: (context, index) {
+                                  final item = _feedItems[index]
+                                      as Map<String, dynamic>;
+                                  // Pass index for the alternating text colors
+                                  return _buildFeedCard(item, index);
+                                },
+                              ),
+                            ),
+            ),
+          ],
+        ),
       ),
     );
   }
