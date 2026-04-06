@@ -2,58 +2,37 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // ─── Brand Colors ───────────────────────────────
-  static const Color green  = Color(0xFF11A253);
-  static const Color blue   = Color(0xFF1660CD);
-  static const Color red    = Color(0xFFF20815);
-  static const Color pink   = Color(0xFFFDA5E1);
-  static const Color orange = Color(0xFFFD6B04);
-  static const Color yellow = Color(0xFFF9CB0A);
-
-  static const Color white  = Colors.white;
-  static const Color cream  = Color(0xFFF5F5F0);
+  static const Color vividGreen   = Color(0xFF11A253);
+  static const Color vividBlue    = Color(0xFF1660CD);
+  static const Color vividRed     = Color(0xFFF20815);
+  static const Color lightPink    = Color(0xFFFDA5E1);
+  static const Color vividOrange  = Color(0xFFFD6B04);
+  static const Color vividYellow  = Color(0xFFF9CB0A);
+  static const Color obsidian     = Color(0xFF1A1A1A);
+  static const Color offWhite     = Color(0xFFF5F5F0);
 
   // ─── Color Pair Helpers ─────────────────────────
-  // signature opposite-color combos
+  // These are your signature “opposite color” combos
   static const List<Map<String, Color>> playfulPairs = [
-    {"bg": blue,   "fg": green},   // blue bg, green text
-    {"bg": red,    "fg": pink},    // red bg, pink text
-    {"bg": pink,   "fg": red},     // pink bg, red text
-    {"bg": yellow, "fg": orange},  // yellow bg, orange text
-    {"bg": orange, "fg": yellow},  // orange bg, yellow text
-    {"bg": green,  "fg": blue},    // green bg, blue text
+    {"bg": vividBlue,   "fg": vividGreen},   // blue bg, green text
+    {"bg": vividRed,    "fg": lightPink},    // red bg, pink text
+    {"bg": lightPink,   "fg": vividRed},     // pink bg, red text
+    {"bg": vividYellow, "fg": vividOrange},  // yellow bg, orange text
+    {"bg": vividOrange, "fg": vividYellow},  // orange bg, yellow text
+    {"bg": vividGreen,  "fg": vividBlue},    // green bg, blue text
   ];
 
   static const List<Color> countdownColors = [
-    green,
-    blue,
-    red,
+    vividGreen,
+    vividRed,
+    vividBlue,
   ];
 
   static const List<Color> activityColors = [
-    pink,
-    orange,
-    yellow,
+    lightPink,
+    vividOrange,
+    vividYellow,
   ];
-
-  // Optional helper if you want rotating card colors later
-  static Color countdownColorAt(int index) =>
-      countdownColors[index % countdownColors.length];
-
-  static Color activityColorAt(int index) =>
-      activityColors[index % activityColors.length];
-
-  static Map<String, Color> pairAt(int index) =>
-      playfulPairs[index % playfulPairs.length];
-
-  // ─── Shared Spacing / Radius ────────────────────
-  static const double pagePadding = 20;
-  static const double sectionGap = 24;
-  static const double itemGap = 16;
-  static const double smallGap = 8;
-
-  static const double radiusLg = 22;
-  static const double radiusMd = 18;
-  static const double radiusSm = 14;
 
   // ─── Text Styles ────────────────────────────────
   static const TextTheme textTheme = TextTheme(
@@ -61,130 +40,128 @@ class AppTheme {
       fontFamily: 'Georgia',
       fontSize: 32,
       fontWeight: FontWeight.w700,
-      color: red,
+      color: vividRed,
     ),
     titleLarge: TextStyle(
       fontFamily: 'Georgia',
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: FontWeight.w700,
-      color: red,
+      color: vividBlue,
     ),
     titleMedium: TextStyle(
       fontFamily: 'Georgia',
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: FontWeight.w700,
-      color: blue,
+      color: vividGreen,
     ),
     bodyLarge: TextStyle(
       fontSize: 16,
-      fontWeight: FontWeight.w600,
-      color: blue,
+      color: vividBlue,
     ),
     bodyMedium: TextStyle(
       fontSize: 14,
-      fontWeight: FontWeight.w500,
-      color: green,
+      color: vividGreen,
     ),
     bodySmall: TextStyle(
       fontSize: 12,
-      fontWeight: FontWeight.w500,
-      color: green,
+      color: vividRed,
     ),
     labelLarge: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w700,
-      color: orange,
+      color: vividOrange,
     ),
   );
 
-  // ─── Full ThemeData ─────────────────────────────
+  // ─── Full ThemeData ──────────────────────────────
   static ThemeData get light => ThemeData(
         brightness: Brightness.light,
-        scaffoldBackgroundColor: white,
+        scaffoldBackgroundColor: offWhite,
         useMaterial3: true,
 
         colorScheme: const ColorScheme.light(
-          primary: blue,
-          secondary: green,
-          tertiary: pink,
-          error: red,
-          surface: white,
-          onPrimary: green,
-          onSecondary: blue,
-          onSurface: blue,
+          primary: vividBlue,
+          secondary: vividGreen,
+          tertiary: lightPink,
+          error: vividRed,
+          surface: Colors.white,
+          onPrimary: vividGreen,
+          onSecondary: vividBlue,
+          onSurface: vividBlue,
         ),
 
         textTheme: textTheme,
 
         // ─── App Bar ──────────────────────────────
         appBarTheme: const AppBarTheme(
-          backgroundColor: white,
-          foregroundColor: red,
+          backgroundColor: offWhite,
+          foregroundColor: vividRed,
           elevation: 0,
           centerTitle: true,
           titleTextStyle: TextStyle(
             fontFamily: 'Georgia',
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: red,
+            color: vividRed,
           ),
         ),
 
         // ─── Cards ────────────────────────────────
+        // No borders — cleaner look
         cardTheme: CardThemeData(
-          color: white,
+          color: Colors.white,
           elevation: 0,
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusLg),
+            borderRadius: BorderRadius.circular(22),
           ),
         ),
 
         // ─── Inputs ───────────────────────────────
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: cream,
+          fillColor: Colors.white,
           hintStyle: const TextStyle(
-            color: blue,
+            color: Color(0xFF888888),
             fontSize: 14,
-            fontWeight: FontWeight.w500,
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 14,
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(radiusMd),
+            borderRadius: BorderRadius.circular(18),
             borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(radiusMd),
+            borderRadius: BorderRadius.circular(18),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(radiusMd),
+            borderRadius: BorderRadius.circular(18),
             borderSide: BorderSide.none,
           ),
           errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(radiusMd),
+            borderRadius: BorderRadius.circular(18),
             borderSide: BorderSide.none,
           ),
           focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(radiusMd),
+            borderRadius: BorderRadius.circular(18),
             borderSide: BorderSide.none,
           ),
         ),
 
         // ─── Elevated Buttons ─────────────────────
+        // Default app button: blue bg + green text
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.resolveWith((states) {
               if (states.contains(MaterialState.disabled)) {
-                return blue.withOpacity(0.35);
+                return vividBlue.withOpacity(0.35);
               }
-              return blue;
+              return vividBlue;
             }),
-            foregroundColor: MaterialStateProperty.all(green),
+            foregroundColor: MaterialStateProperty.all(vividGreen),
             overlayColor: MaterialStateProperty.all(Colors.transparent),
             elevation: MaterialStateProperty.all(0),
             padding: MaterialStateProperty.all(
@@ -204,11 +181,12 @@ class AppTheme {
           ),
         ),
 
-        // ─── Outlined Buttons (filled style) ──────
+        // ─── Outlined Buttons ─────────────────────
+        // Make these filled too, but with green bg + blue text
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(green),
-            foregroundColor: MaterialStateProperty.all(blue),
+            backgroundColor: MaterialStateProperty.all(vividGreen),
+            foregroundColor: MaterialStateProperty.all(vividBlue),
             overlayColor: MaterialStateProperty.all(Colors.transparent),
             side: MaterialStateProperty.all(BorderSide.none),
             elevation: MaterialStateProperty.all(0),
@@ -232,7 +210,7 @@ class AppTheme {
         // ─── Text Buttons ─────────────────────────
         textButtonTheme: TextButtonThemeData(
           style: ButtonStyle(
-            foregroundColor: MaterialStateProperty.all(orange),
+            foregroundColor: MaterialStateProperty.all(vividOrange),
             overlayColor: MaterialStateProperty.all(Colors.transparent),
             textStyle: MaterialStateProperty.all(
               const TextStyle(
@@ -245,17 +223,17 @@ class AppTheme {
 
         // ─── Chips ────────────────────────────────
         chipTheme: ChipThemeData(
-          backgroundColor: cream,
-          selectedColor: blue,
+          backgroundColor: Colors.white,
+          selectedColor: vividBlue,
           labelStyle: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: blue,
+            color: vividBlue,
           ),
           secondaryLabelStyle: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: green,
+            color: vividGreen,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
@@ -264,42 +242,41 @@ class AppTheme {
 
         // ─── Divider ──────────────────────────────
         dividerTheme: const DividerThemeData(
-          color: pink,
+          color: Color(0xFFEAEAEA),
           thickness: 1,
         ),
 
         // ─── Bottom Navigation ────────────────────
         navigationBarTheme: NavigationBarThemeData(
-          backgroundColor: white,
-          indicatorColor: pink.withOpacity(0.25),
+          backgroundColor: Colors.white,
+          indicatorColor: lightPink.withOpacity(0.25),
           elevation: 0,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
           iconTheme: MaterialStateProperty.resolveWith((states) {
             if (states.contains(MaterialState.selected)) {
-              return const IconThemeData(color: red, size: 26);
+              return const IconThemeData(color: vividRed, size: 26);
             }
-            return const IconThemeData(color: blue, size: 24);
+            return const IconThemeData(color: vividBlue, size: 24);
           }),
         ),
 
         // ─── Switches ─────────────────────────────
         switchTheme: SwitchThemeData(
           thumbColor: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.selected)) return yellow;
-            return blue;
+            if (states.contains(MaterialState.selected)) return vividYellow;
+            return Colors.white;
           }),
           trackColor: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.selected)) return orange;
-            return green.withOpacity(0.35);
+            if (states.contains(MaterialState.selected)) return vividOrange;
+            return Colors.grey.shade300;
           }),
-          trackOutlineColor: MaterialStateProperty.all(Colors.transparent),
         ),
 
         // ─── Snackbars ────────────────────────────
         snackBarTheme: SnackBarThemeData(
-          backgroundColor: green,
+          backgroundColor: vividGreen,
           contentTextStyle: const TextStyle(
-            color: blue,
+            color: vividBlue,
             fontWeight: FontWeight.w700,
           ),
           shape: RoundedRectangleBorder(
@@ -307,96 +284,5 @@ class AppTheme {
           ),
           behavior: SnackBarBehavior.floating,
         ),
-
-        // ─── Progress Indicators ──────────────────
-        progressIndicatorTheme: const ProgressIndicatorThemeData(
-          color: red,
-        ),
       );
-}
-
-
-/// Shared layout constants — import this instead of hardcoding
-/// sizes, padding, and radii in individual page files.
-class AppLayout {
-  // Padding
-  static const double pagePadding   = 20;
-  static const double cardPadding   = 18;
-  static const double sectionGap    = 24;
-  static const double itemGap       = 16;
-  static const double smallGap      = 8;
-
-  // Border radii
-  static const double radiusXl      = 26;
-  static const double radiusLg      = 22;
-  static const double radiusMd      = 18;
-  static const double radiusSm      = 12;
-
-  // Countdown card
-  static const double coverArtSize      = 68;
-  static const double coverArtRadius    = 14;
-  static const double clockBreakpoint   = 500; // px — below this, stack vertically
-
-  // Clock digit box
-  static const double digitBoxWidthFull    = 62;
-  static const double digitBoxWidthCompact = 48;
-  static const double digitFontFull        = 34;
-  static const double digitFontCompact     = 24;
-  static const double labelFontSize        = 11;
-}
-
-
-
-
-/// All clock color logic lives here so every widget stays in sync.
-class AppClockTheme {
-  // Valid user-selectable clock styles (stored in DB as these strings)
-  static const String blue   = 'blue';
-  static const String green  = 'green';
-  static const String orange = 'orange';
-  static const String yellow = 'yellow';
-  static const String pink   = 'pink';
-  static const String red    = 'red'; // main countdowns only — not user-selectable
-
-  // All styles a user can pick from
-  static const List<String> userStyles = [blue, green, orange, yellow, pink];
-
-  // Outer shell color (also used for the digits)
-  static Color shellColor(String style) {
-    switch (style) {
-      case green:  return AppTheme.green;
-      case orange: return AppTheme.orange;
-      case yellow: return AppTheme.yellow;
-      case pink:   return AppTheme.pink;
-      case red:    return AppTheme.red;
-      default:     return AppTheme.blue; // blue + fallback
-    }
-  }
-
-  // Highlight color — colons & labels sit on the shell, must contrast
-  static Color highlightColor(String style) {
-    switch (style) {
-      case green:  return AppTheme.blue;
-      case orange: return AppTheme.yellow;
-      case yellow: return AppTheme.orange;
-      case pink:   return AppTheme.red;
-      case red:    return AppTheme.pink;
-      default:     return AppTheme.green; // blue
-    }
-  }
-
-  // Human-readable label shown in the picker
-  static String label(String style) {
-    switch (style) {
-      case green:  return 'Green';
-      case orange: return 'Orange';
-      case yellow: return 'Yellow';
-      case pink:   return 'Pink';
-      default:     return 'Blue';
-    }
-  }
-
-  // Resolves the effective style — main countdowns are always red
-  static String effectiveStyle(String style, {bool isMain = false}) =>
-      isMain ? red : style;
 }

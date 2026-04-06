@@ -16,24 +16,23 @@ class CreateCountdownPage extends StatefulWidget {
 }
 
 class _CreateCountdownPageState extends State<CreateCountdownPage> {
-  // ── artist search ──────────────────────────────────────────────────────────
   final TextEditingController _artistSearchController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+
   List<Map<String, dynamic>> _artistResults = [];
   bool _isSearching = false;
   String? _searchError;
   Timer? _debounce;
 
-  // ── selected artist ────────────────────────────────────────────────────────
   Map<String, dynamic>? _selectedArtist;
 
-  // ── optional fields ────────────────────────────────────────────────────────
-  final TextEditingController _titleController = TextEditingController();
   DateTime? _selectedDate;
   bool _setAsMain = false;
 
-  // ── submission ─────────────────────────────────────────────────────────────
   bool _isSubmitting = false;
   String? _submitError;
+
+  String _selectedClockStyle = "blue";
 
   @override
   void dispose() {
@@ -99,6 +98,25 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
       firstDate: now,
       lastDate: DateTime(now.year + 5),
       helpText: "Select expected release date",
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        return Theme(
+          data: theme.copyWith(
+            colorScheme: theme.colorScheme.copyWith(
+              primary: AppTheme.red,
+              onPrimary: AppTheme.pink,
+              surface: AppTheme.white,
+              onSurface: AppTheme.blue,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.green,
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (picked != null) {
@@ -137,6 +155,7 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
             "cover_art_url": _selectedArtist!["image_url"],
           "spotify_artist_id": _selectedArtist!["spotify_artist_id"],
           "is_main": _setAsMain,
+          "clock_style": _selectedClockStyle,
         }),
       );
 
@@ -144,7 +163,16 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
         if (!mounted) return;
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Countdown added! 🎶")),
+          SnackBar(
+            backgroundColor: AppTheme.green,
+            content: Text(
+              "Countdown added! 🎶",
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppTheme.blue,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ),
         );
       } else if (resp.statusCode == 409) {
         setState(() {
@@ -178,21 +206,28 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: AppTheme.white,
       appBar: AppBar(
-        title: const Text("Add a Countdown"),
+        backgroundColor: AppTheme.white,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          "Add a Countdown",
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: AppTheme.blue,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── live preview ─────────────────────────────────────────────────
             if (_showPreview) ...[
               _buildPreviewCard(),
               const SizedBox(height: 28),
             ],
 
-            // ── STEP 1: artist ───────────────────────────────────────────────
             const _SectionLabel(number: "1", text: "Search for an artist *"),
             const SizedBox(height: 10),
 
@@ -215,15 +250,18 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
               ),
               if (_isSearching) ...[
                 const SizedBox(height: 12),
-                const Center(child: CircularProgressIndicator()),
+                Center(
+                  child: CircularProgressIndicator(
+                    color: AppTheme.blue,
+                  ),
+                ),
               ],
               if (_searchError != null) ...[
                 const SizedBox(height: 6),
                 Text(
                   _searchError!,
-                  style: TextStyle(
-                    color: theme.colorScheme.error,
-                    fontSize: 13,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppTheme.red,
                   ),
                 ),
               ],
@@ -231,47 +269,57 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
                 const SizedBox(height: 8),
                 Text(
                   "Tap an artist to select",
-                  style: theme.textTheme.bodySmall,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppTheme.green,
+                  ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Card(
+                  color: AppTheme.green,
                   margin: EdgeInsets.zero,
                   child: ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: _artistResults.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    separatorBuilder: (_, __) => const SizedBox(height: 0),
                     itemBuilder: (context, index) {
                       final artist = _artistResults[index];
                       final genres = (artist["genres"] as List?) ?? [];
 
                       return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
                         leading: artist["image_url"] != null
                             ? ClipOval(
                                 child: Image.network(
                                   artist["image_url"],
-                                  width: 44,
-                                  height: 44,
+                                  width: 48,
+                                  height: 48,
                                   fit: BoxFit.cover,
                                 ),
                               )
                             : CircleAvatar(
-                                backgroundColor: theme.colorScheme.surface,
+                                backgroundColor: AppTheme.blue,
                                 child: Icon(
                                   Icons.person,
-                                  color: theme.colorScheme.primary,
+                                  color: AppTheme.green,
                                 ),
                               ),
                         title: Text(
                           artist["artist_name"] ?? "",
                           style: theme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.blue,
                           ),
                         ),
                         subtitle: genres.isNotEmpty
                             ? Text(
                                 genres.join(", "),
-                                style: theme.textTheme.bodySmall,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: AppTheme.blue,
+                                ),
                               )
                             : null,
                         onTap: () => setState(() {
@@ -289,7 +337,6 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
 
             const SizedBox(height: 24),
 
-            // ── STEP 2: date ─────────────────────────────────────────────────
             const _SectionLabel(number: "2", text: "Expected release date *"),
             const SizedBox(height: 10),
             GestureDetector(
@@ -297,20 +344,19 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 14,
+                  horizontal: 16,
+                  vertical: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: theme.inputDecorationTheme.fillColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.black26),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppLayout.radiusMd),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.calendar_today,
                       size: 18,
-                      color: theme.textTheme.bodySmall?.color,
+                      color: AppTheme.blue,
                     ),
                     const SizedBox(width: 10),
                     Text(
@@ -318,9 +364,8 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
                           ? _formatDate(_selectedDate!)
                           : "Tap to pick a date",
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: _selectedDate != null
-                            ? AppTheme.obsidian
-                            : theme.textTheme.bodySmall?.color,
+                        color: AppTheme.blue,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -330,7 +375,6 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
 
             const SizedBox(height: 24),
 
-            // ── STEP 3: optional title ───────────────────────────────────────
             const _SectionLabel(
               number: "3",
               text: "Album / project title (optional)",
@@ -343,28 +387,44 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
               ),
               onChanged: (_) => setState(() {}),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
               "Don't know the title yet? No problem — you can update it later.",
-              style: theme.textTheme.bodySmall,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: AppTheme.green,
+              ),
             ),
 
             const SizedBox(height: 24),
 
-            // ── set as main toggle ───────────────────────────────────────────
+            const _SectionLabel(number: "4", text: "Choose clock color"),
+            const SizedBox(height: 12),
+            _ClockStylePicker(
+              selectedStyle: _selectedClockStyle,
+              onSelected: (style) {
+                setState(() => _selectedClockStyle = style);
+              },
+            ),
+
+            const SizedBox(height: 24),
+
             Card(
+              color: AppTheme.white,
               margin: EdgeInsets.zero,
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 child: Row(
                   children: [
                     Switch(
                       value: _setAsMain,
-                      activeColor: theme.colorScheme.primary,
+                      activeColor: AppTheme.green,
+                      activeTrackColor: AppTheme.blue,
+                      inactiveThumbColor: AppTheme.orange,
+                      inactiveTrackColor: AppTheme.yellow,
                       onChanged: (val) => setState(() => _setAsMain = val),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,12 +432,15 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
                           Text(
                             "Set as my main countdown",
                             style: theme.textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.blue,
                             ),
                           ),
                           Text(
                             "Shows at the top of your profile",
-                            style: theme.textTheme.bodySmall,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppTheme.green,
+                            ),
                           ),
                         ],
                       ),
@@ -391,34 +454,43 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
               const SizedBox(height: 12),
               Text(
                 _submitError!,
-                style: TextStyle(
-                  color: theme.colorScheme.error,
-                  fontSize: 13,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppTheme.red,
                 ),
               ),
             ],
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 28),
 
-            // ── submit ───────────────────────────────────────────────────────
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _submit,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+            Center(
+              child: SizedBox(
+                width: 220,
+                height: 58,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.blue,
+                    foregroundColor: AppTheme.green,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: _isSubmitting
+                      ? CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: AppTheme.green,
+                        )
+                      : Text(
+                          "Add Countdown",
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: AppTheme.green,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                      )
-                    : const Text("Add Countdown"),
+                ),
               ),
             ),
-
-            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -437,20 +509,31 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
       _selectedDate!.day,
     );
 
+    // Resolve what color the clock will actually be
+    final effectiveStyle = AppClockTheme.effectiveStyle(
+      _selectedClockStyle,
+      isMain: _setAsMain,
+    );
+    final shellColor     = AppClockTheme.shellColor(effectiveStyle);
+    final highlightColor = AppClockTheme.highlightColor(effectiveStyle);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           "Preview",
           style: theme.textTheme.bodySmall?.copyWith(
+            color: AppTheme.green,
             letterSpacing: 1,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Card(
+          color: Colors.white,
           margin: EdgeInsets.zero,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppLayout.cardPadding),
             child: Column(
               children: [
                 Row(
@@ -459,19 +542,16 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
                       ClipOval(
                         child: Image.network(
                           imageUrl,
-                          width: 52,
-                          height: 52,
+                          width: 56,
+                          height: 56,
                           fit: BoxFit.cover,
                         ),
                       )
                     else
                       CircleAvatar(
-                        radius: 26,
-                        backgroundColor: theme.colorScheme.surface,
-                        child: Icon(
-                          Icons.person,
-                          color: theme.colorScheme.primary,
-                        ),
+                        radius: 28,
+                        backgroundColor: shellColor,
+                        child: Icon(Icons.person, color: highlightColor),
                       ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -481,13 +561,15 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
                           Text(
                             title.isNotEmpty ? title : "Untitled Project",
                             style: theme.textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w800,
+                              color: shellColor,       // matches clock body
                             ),
                           ),
                           Text(
                             artistName,
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: Colors.black54,
+                              color: shellColor,       // matches digits
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -496,8 +578,12 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                CountdownClock(releaseDate: releaseDateTime),
-                const SizedBox(height: 4),
+                CountdownClock(
+                  releaseDate: releaseDateTime,
+                  clockStyle: _selectedClockStyle,
+                  isMain: _setAsMain,              // ← this is what was missing
+                  compact: false,
+                ),
               ],
             ),
           ),
@@ -513,7 +599,6 @@ class _CreateCountdownPageState extends State<CreateCountdownPage> {
   }
 }
 
-// ── selected artist card ───────────────────────────────────────────────────
 class _SelectedArtistCard extends StatelessWidget {
   final Map<String, dynamic> artist;
   final VoidCallback onClear;
@@ -529,27 +614,28 @@ class _SelectedArtistCard extends StatelessWidget {
     final genres = (artist["genres"] as List?) ?? [];
 
     return Card(
+      color: AppTheme.blue,
       margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
             if (artist["image_url"] != null)
               ClipOval(
                 child: Image.network(
                   artist["image_url"],
-                  width: 46,
-                  height: 46,
+                  width: 50,
+                  height: 50,
                   fit: BoxFit.cover,
                 ),
               )
             else
               CircleAvatar(
-                radius: 23,
-                backgroundColor: theme.colorScheme.surface,
+                radius: 25,
+                backgroundColor: AppTheme.green,
                 child: Icon(
                   Icons.person,
-                  color: theme.colorScheme.primary,
+                  color: AppTheme.blue,
                 ),
               ),
             const SizedBox(width: 12),
@@ -560,13 +646,16 @@ class _SelectedArtistCard extends StatelessWidget {
                   Text(
                     artist["artist_name"] ?? "",
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.green,
                     ),
                   ),
                   if (genres.isNotEmpty)
                     Text(
                       genres.join(", "),
-                      style: theme.textTheme.bodySmall,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: AppTheme.pink,
+                      ),
                     ),
                 ],
               ),
@@ -576,7 +665,7 @@ class _SelectedArtistCard extends StatelessWidget {
               icon: Icon(
                 Icons.close,
                 size: 20,
-                color: theme.colorScheme.primary,
+                color: AppTheme.red,
               ),
               tooltip: "Change artist",
             ),
@@ -587,7 +676,6 @@ class _SelectedArtistCard extends StatelessWidget {
   }
 }
 
-// ── numbered section label ─────────────────────────────────────────────────
 class _SectionLabel extends StatelessWidget {
   final String number;
   final String text;
@@ -603,26 +691,89 @@ class _SectionLabel extends StatelessWidget {
 
     return Row(
       children: [
-        CircleAvatar(
-          radius: 12,
-          backgroundColor: theme.colorScheme.primary,
-          child: Text(
-            number,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: AppTheme.green,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: Text(
+              number,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: AppTheme.blue,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 10),
         Text(
           text,
           style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.blue,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ClockStylePicker extends StatelessWidget {
+  final String selectedStyle;
+  final ValueChanged<String> onSelected;
+
+  const _ClockStylePicker({
+    required this.selectedStyle,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: AppClockTheme.userStyles.map((style) {
+        final shell     = AppClockTheme.shellColor(style);
+        final highlight = AppClockTheme.highlightColor(style);
+        final selected  = selectedStyle == style;
+
+        return GestureDetector(
+          onTap: () => onSelected(style),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: shell,
+              borderRadius: BorderRadius.circular(AppLayout.radiusMd),
+              border: selected
+                  ? Border.all(color: highlight, width: 2.5)
+                  : null,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.timer_outlined, color: highlight, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  AppClockTheme.label(style),
+                  style: TextStyle(
+                    color: highlight,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (selected) ...[
+                  const SizedBox(width: 8),
+                  Icon(Icons.check_circle, color: highlight, size: 16),
+                ],
+              ],
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
