@@ -7,7 +7,7 @@ services:
     source_dir: backend
     build_command: npm install
     run_command: npm start
-    http_port: 3000
+    http_port: 8080
     envs:
     - key: PORT
       value: "3000"
@@ -22,4 +22,4 @@ static_sites:
     source_dir: frontend
     build_command: flutter build web --release
     run_command: python -m http.server 8080
-    http_port: 8080
+    http_port: 8081
