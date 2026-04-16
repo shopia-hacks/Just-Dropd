@@ -1,0 +1,25 @@
+name: justdropd
+services:
+  - name: backend
+    github:
+      repo: shopia-hacks/Just-Dropd
+      branch: main
+    source_dir: backend
+    build_command: npm install
+    run_command: npm start
+    http_port: 3000
+    envs:
+    - key: PORT
+      value: "3000"
+    - key: NODE_ENV
+      value: production
+
+static_sites:
+  - name: frontend
+    github:
+      repo: shopia-hacks/Just-Dropd
+      branch: main
+    source_dir: frontend
+    build_command: flutter build web --release
+    run_command: python -m http.server 8080
+    http_port: 8080
