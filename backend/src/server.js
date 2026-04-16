@@ -1,16 +1,19 @@
 import app from "./app.js";
-// import connectDB from "./config/db.js";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
+
+if (!PORT) {
+  throw new Error("PORT environment variable is required");
+}
 
 async function startServer() {
-  await connectDB(); // wait for DB connection before starting the server
+  await connectDB();
 
-  app.listen(PORT, () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`Backend running on port ${PORT}`);
   });
 }
