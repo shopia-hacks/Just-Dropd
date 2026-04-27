@@ -38,7 +38,7 @@ class _AddAlbumReviewPageState extends State<AddAlbumReviewPage> {
 
 
  String get _baseUrl {
-   return "http://localhost:3000";
+   return "https://api.justdropd.com";
  }
 
 

@@ -13,7 +13,7 @@ class ActivityFeed extends StatefulWidget {
 }
 
 class _ActivityFeedState extends State<ActivityFeed> {
-  String get _baseUrl => "http://localhost:3000";
+  String get _baseUrl => "https://api.justdropd.com";
 
   bool _loading = false;
   String? _error;
