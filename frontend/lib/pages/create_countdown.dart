@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:just_dropd/shared/countdown_clock.dart';
 import 'package:just_dropd/theme/theme.dart';
 
-const String _baseUrl = "http://localhost:3000";
+const String _baseUrl = "https://api.justdropd.com";
 
 class CreateCountdownPage extends StatefulWidget {
   final String? userId;

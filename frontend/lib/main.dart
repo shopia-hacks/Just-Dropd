@@ -40,7 +40,7 @@ void main() {
   ));
 }
 
-final Uri spotifyLoginUrl = Uri.parse("http://localhost:3000/login");
+final Uri spotifyLoginUrl = Uri.parse("https://api.justdropd.com/login");
 
 class HomeRoute extends StatelessWidget {
   const HomeRoute({super.key});

@@ -19,7 +19,7 @@ class AddFriendsPage extends StatefulWidget {
 
 class _AddFriendsPageState extends State<AddFriendsPage> {
   //the base url for the backend API so we can pull and push data to the backend
-  String get _baseUrl => "http://localhost:3000";
+  String get _baseUrl => "https://api.justdropd.com";
 
   //controller for the text field where a user types a Spotify username (id)
   final _usernameController = TextEditingController(); //TextEditingController lets us read what the user typed and be able to clear it later

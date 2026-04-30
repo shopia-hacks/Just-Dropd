@@ -50,7 +50,7 @@ class _AddMixtapePageState extends State<AddMixtapePage> {
   String? _createMixtapeSuccess;
 
   String get _baseUrl {
-    return "http://localhost:3000";
+    return "https://api.justdropd.com";
   }
 
   @override

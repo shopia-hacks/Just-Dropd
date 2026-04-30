@@ -331,7 +331,7 @@ class _AddConcertReviewState extends State<AddConcertReview> {
       return;
     }
 
-    final url = Uri.parse("http://localhost:3000/concert-reviews");
+    final url = Uri.parse("https://api.justdropd.com/concert-reviews");
     final request = http.MultipartRequest('POST', url);
 
     request.fields.addAll({

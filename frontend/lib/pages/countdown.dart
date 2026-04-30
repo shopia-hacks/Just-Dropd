@@ -5,7 +5,7 @@ import 'package:just_dropd/theme/theme.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-const String _baseUrl = 'http://localhost:3000';
+const String _baseUrl = 'https://api.justdropd.com';
 
 class CountdownPage extends StatefulWidget {
   final String? userId;

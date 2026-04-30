@@ -46,7 +46,7 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
     if (widget.userId == null) return;
 
     try {
-      final uri = Uri.parse("http://localhost:3000/album-reviews/user/${widget.userId}");
+      final uri = Uri.parse("https://api.justdropd.com/album-reviews/user/${widget.userId}");
       final resp = await http.get(uri, headers: {
         "Content-Type": "application/json",
       });
@@ -72,7 +72,7 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
       throw Exception("Missing userId in route");
     }
 
-    final uri = Uri.parse("http://localhost:3000/mixtapes/shelf/$id");
+    final uri = Uri.parse("https://api.justdropd.com/mixtapes/shelf/$id");
 
     final resp = await http.get(uri, headers: {
       "Content-Type": "application/json",
@@ -98,7 +98,7 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
       throw Exception("Missing userId in route");
     }
 
-    final uri = Uri.parse("http://localhost:3000/users/$id");
+    final uri = Uri.parse("https://api.justdropd.com/users/$id");
 
     final resp = await http.get(uri, headers: {
       "Content-Type": "application/json",
@@ -211,7 +211,7 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
                                 final imageUrl = rawCoverPath.isNotEmpty
                                     ? (rawCoverPath.startsWith('http')
                                         ? rawCoverPath
-                                        : 'http://localhost:3000/$rawCoverPath')
+                                        : 'https://api.justdropd.com/$rawCoverPath')
                                     : 'https://placehold.co/136x136.png';
 
                                 final playlistUrl = mixtape['spotify_playlist_url'] ?? '';
@@ -471,7 +471,7 @@ class _ConcertReviewCard extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     itemCount: images.length,
                     itemBuilder: (context, imgIndex) {
-                      final imageUrl = "http://localhost:3000/${images[imgIndex]}";
+                      final imageUrl = "https://api.justdropd.com/${images[imgIndex]}";
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ClipRRect(
