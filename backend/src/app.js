@@ -14,8 +14,17 @@ import activityFeedRoutes from "./routes/activityfeed.js";
 
 
 const app = express();
+const cors = require('cors');
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        'https://justdropd.com',
+        'https://www.justdropd.com',
+        'https://localhost:5500',
+        'https://localhost:3000'
+    ],
+    credentials: true
+}));
 app.use(express.json());
 app.use("/spotify", spotifyRoutes);
 app.use("/api/spotify", spotifyRoutes);
