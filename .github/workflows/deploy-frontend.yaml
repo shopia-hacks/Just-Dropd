@@ -37,6 +37,9 @@ jobs:
       - name: Build Flutter web
         run: flutter build web --release --base-href /
 
+      - name: Add GitHub Pages SPA fallback
+        run: cp build/web/index.html build/web/404.html
+
       - name: Add CNAME file
         run: echo "justdropd.com" > build/web/CNAME
 
