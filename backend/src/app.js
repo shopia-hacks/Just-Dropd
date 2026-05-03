@@ -20,8 +20,8 @@ app.use(cors({
     origin: [
         'https://justdropd.com',
         'https://www.justdropd.com',
-        'https://localhost:5500',
-        'https://localhost:3000'
+        'http://localhost:5500',
+        'http://localhost:3000'
     ],
     credentials: true
 }));

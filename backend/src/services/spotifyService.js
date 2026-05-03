@@ -14,6 +14,10 @@ export function createSpotifyClient(accessToken, refreshToken) {
 }
 
 export function getSpotifyLoginUrl() {
+  console.log("SPOTIFY_CLIENT_ID:", process.env.SPOTIFY_CLIENT_ID);
+  console.log("SPOTIFY_REDIRECT_URI:", process.env.SPOTIFY_REDIRECT_URI);
+
+
   const spotify = createSpotifyClient();
 
   const scopes = [

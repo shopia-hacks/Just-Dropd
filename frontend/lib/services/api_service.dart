@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static const String baseUrl = "https://api.justdropd.com"; 
-  // Flutter web uses localhost, NOT 10.0.2.2
 
   static Future<String> pingBackend() async {
     final uri = Uri.parse("$baseUrl/health");
