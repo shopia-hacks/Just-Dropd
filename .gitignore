@@ -5,3 +5,4 @@ node_modules
 frontend/linux/flutter/
 frontend/macos/flutter/
 frontend/windows/flutter/
+frontend/build/
