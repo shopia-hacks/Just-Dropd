@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../pages/profile_page.dart';
+import '../pages/landing_page.dart';
 
 // theme
 import 'theme/theme.dart';
@@ -40,6 +41,7 @@ void main() {
   ));
 }
 
+/*
 final Uri spotifyLoginUrl = Uri.parse("https://api.justdropd.com/login");
 
 class HomeRoute extends StatelessWidget {
@@ -76,3 +78,4 @@ class HomeRoute extends StatelessWidget {
     );
   }
 }
+*/

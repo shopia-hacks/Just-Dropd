@@ -162,6 +162,8 @@ class _CreateProfileRouteState extends State<CreateProfileRoute> {
 
                     const SizedBox(height: AppLayout.sectionGap),
 
+                    //_SectionTitle(title: "Mixtape Shelf"),
+
                     _SectionShell(
                       title: "Mixtape Shelf",
                       child: FutureBuilder<List<dynamic>>(
@@ -368,7 +370,7 @@ class _SectionShell extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppLayout.cardPadding),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cream,
         borderRadius: BorderRadius.circular(AppLayout.radiusLg),
         border: Border.all(color: AppTheme.pink),
       ),
