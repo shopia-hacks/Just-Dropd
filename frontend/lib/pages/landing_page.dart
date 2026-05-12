@@ -128,7 +128,7 @@ const List<_TeamMember> _team = [
   _TeamMember(
     name: 'Gabi Ramirez',
     role: 'Frontend & Usability Testing',
-    imagePath: 'assets/photos/gabi.jpg', // replace with 'assets/images/gabi.jpg'
+    imagePath: 'assets/photos/gabriella.jpg', // replace with 'assets/images/gabi.jpg'
     bg: AppTheme.yellow,
     fg: AppTheme.orange,
   ),
