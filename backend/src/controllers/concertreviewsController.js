@@ -9,7 +9,8 @@ export async function createConcertReview(req, res) {
   console.log("req.files:", req.files);
 
   try {
-    const imagePaths = req.files?.map((f) => f.path.replace(/\\/g, "/")) ?? [];
+    const imagePaths = req.files?.map((f) => 
+      `data:${f.mimetype};base64,${f.buffer.toString("base64")}`) ?? [];
 
     const review = new ConcertReview({
       ...req.body,
