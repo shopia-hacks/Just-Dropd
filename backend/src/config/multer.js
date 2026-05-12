@@ -1,9 +1,18 @@
 // config/multer.js
 import multer from "multer";
 
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
-});
+export const upload = multer({
+  storage: multer.memoryStorage(),
 
-export const upload = multer({ storage, limits: { files: 5 } });
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5 MB max image size
+  },
+
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("Only image files are allowed"), false);
+    }
+
+    cb(null, true);
+  },
+});

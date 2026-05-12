@@ -18,8 +18,8 @@ export async function createMixtape(req, res) {
 
     const tracks = JSON.parse(req.body.tracks || "[]");
 
-    const coverImagePath = req.file
-      ? req.file.path.replace(/\\/g, "/")
+    const coverImageDataUrl = req.file
+      ? `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
       : "";
 
     if (!title || !creatorId || !receiverId) {
@@ -53,7 +53,7 @@ export async function createMixtape(req, res) {
       message: message || "",
       type: (type || "cd").toLowerCase(),
       visibility: visibility || "public",
-      cover_image_url: coverImagePath,
+      cover_image_url: coverImageDataUrl,
       status: "pending",
       tracks
     });
